@@ -14,12 +14,12 @@
 </p>
 
 > [!IMPORTANT]
-> Masonite ORM has moved to the [masonitedev](https://github.com/masonitedev) organization and the PyPI package has been renamed from `masonite-orm` to **`masoniteorm`** (matching the import name). The legacy `masonite-orm` package will no longer receive updates.
+> Masonite ORM has moved to the [masonitedev](https://github.com/masonitedev) organization and the PyPI package has been renamed from `masonite-orm` to **`masonite-framework-orm`**. The legacy `masonite-orm` package will no longer receive updates.
 
 ## Installation & Usage
 
 ```bash
-pip install masoniteorm
+pip install masonite-framework-orm
 ```
 
 Imports are unchanged — you still `from masoniteorm.models import Model`.
