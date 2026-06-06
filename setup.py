@@ -4,20 +4,22 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name="masonite-orm",
+    name="masoniteorm",
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version="3.0.0",
+    version="3.0.1",
     package_dir={"": "src"},
     description="The Official Masonite ORM",
     long_description=long_description,
     long_description_content_type="text/markdown",
     # The project's main homepage.
-    url="https://github.com/masoniteframework/orm",
+    url="https://github.com/masonitedev/orm",
     # Author details
     author="Joe Mancuso",
-    author_email="joe@masoniteproject.com",
+    author_email="contact@masonite.dev",
+    maintainer="Eduardo Aguad",
+    maintainer_email="contact@masonite.dev",
     # Choose your license
     license="MIT",
     # If your package should include things you specify in your MANIFEST.in file
@@ -60,7 +62,7 @@ setup(
         "Framework :: Masonite",
     ],
     # What does your project relate to?
-    keywords="Masonite, MasoniteFramework, Python, ORM",
+    keywords="Masonite, masoniteorm, Python, ORM",
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
     packages=[
@@ -111,6 +113,7 @@ setup(
     entry_points={
         "console_scripts": [
             "masonite-orm = masoniteorm.commands.Entry:application.run",
+            "masoniteorm = masoniteorm.commands.Entry:application.run",
         ],
     },
 )
