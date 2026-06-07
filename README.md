@@ -10,7 +10,7 @@
   <img src="https://img.shields.io/badge/python-3.8+-blue.svg" alt="Python Version">
   <img alt="GitHub release (latest by date)" src="https://img.shields.io/github/v/release/masonitedev/orm">
   <img alt="License" src="https://img.shields.io/github/license/masonitedev/orm">
-  <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+  <a href="https://github.com/astral-sh/ruff"><img alt="Linted and formatted with Ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json"></a>
 </p>
 
 > [!IMPORTANT]
