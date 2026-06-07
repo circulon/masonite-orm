@@ -14,7 +14,6 @@ class MSSQLPlatform(Platform):
     type_map = {
         "string": "VARCHAR",
         "char": "CHAR",
-        "big_increments": "BIGINT IDENTITY",
         "integer": "INT",
         "big_integer": "BIGINT",
         "tiny_integer": "TINYINT",
@@ -25,7 +24,6 @@ class MSSQLPlatform(Platform):
         "tiny_integer_unsigned": "TINYINT",
         "small_integer_unsigned": "SMALLINT",
         "medium_integer_unsigned": "MEDIUMINT",
-        "increments": "INT IDENTITY",
         "uuid": "CHAR",
         "binary": "LONGBLOB",
         "boolean": "BOOLEAN",
@@ -48,9 +46,17 @@ class MSSQLPlatform(Platform):
         "date": "DATE",
         "year": "YEAR",
         "datetime": "DATETIME",
-        "tiny_increments": "TINYINT IDENTITY",
         "unsigned": "INT",
         "unsigned_integer": "INT",
+        "tiny_increments": "TINYINT IDENTITY",
+        "increments": "INT IDENTITY",
+        "big_increments": "BIGINT IDENTITY",
+        # The PRIMARY KEY constraint for these is added in columnize() after
+        # the nullability clause: T-SQL expects IDENTITY before any column
+        # constraints ([name] INT IDENTITY NOT NULL PRIMARY KEY).
+        "tiny_increments_primary": "TINYINT IDENTITY",
+        "increments_primary": "INT IDENTITY",
+        "big_increments_primary": "BIGINT IDENTITY",
     }
 
     premapped_nulls = {True: "NULL", False: "NOT NULL"}
@@ -261,7 +267,7 @@ class MSSQLPlatform(Platform):
 
             constraint = ""
             column_constraint = ""
-            if column.primary:
+            if column.column_type.endswith("increments_primary"):
                 constraint = " PRIMARY KEY"
 
             if column.column_type == "enum":

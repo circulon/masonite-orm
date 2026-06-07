@@ -21,8 +21,6 @@ class MySQLPlatform(Platform):
         "tiny_integer_unsigned": "TINYINT UNSIGNED",
         "small_integer_unsigned": "SMALLINT UNSIGNED",
         "medium_integer_unsigned": "MEDIUMINT UNSIGNED",
-        "big_increments": "BIGINT UNSIGNED AUTO_INCREMENT",
-        "increments": "INT UNSIGNED AUTO_INCREMENT",
         "uuid": "CHAR",
         "binary": "LONGBLOB",
         "boolean": "BOOLEAN",
@@ -45,8 +43,15 @@ class MySQLPlatform(Platform):
         "date": "DATE",
         "year": "YEAR",
         "datetime": "DATETIME",
-        "tiny_increments": "TINYINT AUTO_INCREMENT",
         "unsigned": "INT UNSIGNED",
+        # MySQL requires an AUTO_INCREMENT column to be defined as a key
+        # (error 1075), so non-primary *_increments columns carry UNIQUE.
+        "tiny_increments": "TINYINT UNSIGNED AUTO_INCREMENT UNIQUE",
+        "increments": "INT UNSIGNED AUTO_INCREMENT UNIQUE",
+        "big_increments": "BIGINT UNSIGNED AUTO_INCREMENT UNIQUE",
+        "tiny_increments_primary": "TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT",
+        "increments_primary": "INT UNSIGNED PRIMARY KEY AUTO_INCREMENT",
+        "big_increments_primary": "BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT",
     }
 
     premapped_nulls = {True: "NULL", False: "NOT NULL"}
@@ -88,9 +93,6 @@ class MySQLPlatform(Platform):
 
             constraint = ""
             column_constraint = ""
-            if column.primary:
-                constraint = "PRIMARY KEY"
-
             if column.column_type == "enum":
                 values = ", ".join(f"'{x}'" for x in column.values)
                 column_constraint = f"({values})"

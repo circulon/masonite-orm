@@ -1,3 +1,4 @@
+from ...exceptions import QueryException
 from ...schema import Schema
 from ..Table import Table
 from .Platform import Platform
@@ -20,15 +21,15 @@ class SQLitePlatform(Platform):
         "integer": "INTEGER",
         "big_integer": "BIGINT",
         "tiny_integer": "TINYINT",
-        "big_increments": "BIGINT",
         "small_integer": "SMALLINT",
         "medium_integer": "MEDIUMINT",
-        "integer_unsigned": "INT UNSIGNED",
-        "big_integer_unsigned": "BIGINT UNSIGNED",
-        "tiny_integer_unsigned": "TINYINT UNSIGNED",
-        "small_integer_unsigned": "SMALLINT UNSIGNED",
-        "medium_integer_unsigned": "MEDIUMINT UNSIGNED",
-        "increments": "INTEGER",
+        # Sqlite database does not implement unsigned types
+        # So the below types are the same as the normal ones
+        "integer_unsigned": "INT",
+        "big_integer_unsigned": "BIGINT",
+        "tiny_integer_unsigned": "TINYINT",
+        "small_integer_unsigned": "SMALLINT",
+        "medium_integer_unsigned": "MEDIUMINT",
         "uuid": "CHAR",
         "binary": "LONGBLOB",
         "boolean": "BOOLEAN",
@@ -51,8 +52,22 @@ class SQLitePlatform(Platform):
         "date": "DATE",
         "year": "VARCHAR",
         "datetime": "DATETIME",
-        "tiny_increments": "TINYINT AUTO_INCREMENT",
-        "unsigned": "INT UNSIGNED",
+        "unsigned": "INT",
+        "tiny_increments": "TINYINT",
+        "increments": "INTEGER",
+        "big_increments": "BIGINT",
+        # SQLite only supports AUTOINCREMENT on an INTEGER PRIMARY KEY
+        # column (a 64-bit rowid alias), so every *_increments_primary
+        # variant compiles to the same definition.
+        "tiny_increments_primary": "INTEGER PRIMARY KEY AUTOINCREMENT",
+        "increments_primary": "INTEGER PRIMARY KEY AUTOINCREMENT",
+        "big_increments_primary": "INTEGER PRIMARY KEY AUTOINCREMENT",
+    }
+
+    primary_key_type_check = {
+        "tiny_increments": "tiny_increments() not supported on non-primary key columns. For a primary key use '.tiny_increments('{}').primary()'",
+        "increments": "increments() not supported on non-primary key columns. For a primary key use '.increments('{}').primary()'",
+        "big_increments": "big_increments() not supported on non-primary key columns. For a primary key use '.big_increments('{}').primary()'",
     }
 
     premapped_defaults = {
@@ -107,7 +122,21 @@ class SQLitePlatform(Platform):
 
     def columnize(self, columns):
         sql = []
+
+        # check for unsupported types
         for name, column in columns.items():
+            constraint = ""
+            if column.column_type in self.primary_key_type_check:
+                if not column.primary:
+                    msg = self.primary_key_type_check[
+                        column.column_type
+                    ].format(column.name)
+                    raise QueryException(msg)
+
+                # Compile through the *_increments_primary mapping so the
+                # column gets the INTEGER PRIMARY KEY AUTOINCREMENT form.
+                column.column_type = f"{column.column_type}_primary"
+
             if column.length:
                 length = self.create_column_length(column.column_type).format(
                     length=column.length
@@ -132,11 +161,7 @@ class SQLitePlatform(Platform):
             else:
                 default = ""
 
-            constraint = ""
             column_constraint = ""
-            if column.primary:
-                constraint = "PRIMARY KEY"
-
             if column.column_type == "enum":
                 values = ", ".join(f"'{x}'" for x in column.values)
                 column_constraint = f" CHECK({column.name} IN ({values}))"
@@ -148,12 +173,6 @@ class SQLitePlatform(Platform):
                     data_type=self.type_map.get(column.column_type, ""),
                     column_constraint=column_constraint,
                     length=length,
-                    signed=(
-                        " " + self.signed.get(column._signed)
-                        if column.column_type not in self.types_without_signs
-                        and column._signed
-                        else ""
-                    ),
                     constraint=constraint,
                     nullable=self.premapped_nulls.get(column.is_null) or "",
                     default=default,
@@ -203,13 +222,6 @@ class SQLitePlatform(Platform):
                         column_constraint=column_constraint,
                         nullable="NULL" if column.is_null else "NOT NULL",
                         default=default,
-                        signed=(
-                            " " + self.signed.get(column._signed)
-                            if column.column_type
-                            not in self.types_without_signs
-                            and column._signed
-                            else ""
-                        ),
                         constraint=constraint,
                     )
                     .strip()
@@ -325,7 +337,7 @@ class SQLitePlatform(Platform):
         return '"{column}"'
 
     def add_column_string(self):
-        return "ALTER TABLE {table} ADD COLUMN {name} {data_type}{column_constraint}{signed} {nullable}{default}{constraint}"
+        return "ALTER TABLE {table} ADD COLUMN {name} {data_type}{column_constraint} {nullable}{default}{constraint}"
 
     def create_column_length(self, column_type):
         if column_type in self.types_without_lengths:
@@ -333,7 +345,7 @@ class SQLitePlatform(Platform):
         return "({length})"
 
     def columnize_string(self):
-        return "{name} {data_type}{length}{column_constraint}{signed} {nullable}{default} {constraint}"
+        return "{name} {data_type}{length}{column_constraint} {nullable}{default} {constraint}"
 
     def get_unique_constraint_string(self):
         return "UNIQUE({columns})"
