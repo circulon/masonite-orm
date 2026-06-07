@@ -77,8 +77,13 @@ class SQLiteConnection(BaseConnection):
         for key, value in self.options.items():
             if key in _SQLITE3_CONNECT_KWARGS:
                 connect_kwargs[key] = value
-            else:
+            elif key.isidentifier():
                 pragma_settings[key] = value
+            else:
+                raise ValueError(
+                    f"Invalid SQLite connection option '{key}'. Options must "
+                    "be sqlite3.connect() keyword arguments or PRAGMA names."
+                )
 
         return connect_kwargs, pragma_settings
 

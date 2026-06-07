@@ -73,9 +73,13 @@ class MSSQLConnection(BaseConnection):
         if instance:
             instance = "\\" + instance
 
+        server = f"{self.host}{instance}"
+        if self.port:
+            server += f",{self.port}"
+
         parts = [
             f"DRIVER={driver}",
-            f"SERVER={self.host}{instance},{self.port}",
+            f"SERVER={server}",
             f"Connection Timeout={connection_timeout}",
             f"DATABASE={self.database}",
             f"UID={self.user}",
