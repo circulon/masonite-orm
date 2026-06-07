@@ -18,21 +18,20 @@ init-ci:
 .env:
 	cp .env-example .env
 
-# 	Create MySQL Database
-# 	Create Postgres Database
 test: init test-asserts
 	python -m pytest tests
 ci:
 	make test
-check: format sort lint test-asserts
+check: lint format-check test-asserts
 lint:
-	flake8 src/masoniteorm tests
+	ruff check src/masoniteorm tests scripts
+format: init
+	ruff check --fix src/masoniteorm tests scripts
+	ruff format src/masoniteorm tests scripts
+format-check:
+	ruff format --check src/masoniteorm tests scripts
 test-asserts:
 	python scripts/check_test_asserts.py
-format: init
-	black src/masoniteorm tests/
-sort: init
-	isort src/masoniteorm tests/
 coverage:
 	python -m pytest --cov-report term --cov-report xml --cov=src/masoniteorm tests/
 	python -m coveralls
@@ -40,17 +39,6 @@ show:
 	python -m pytest --cov-report term --cov-report html --cov=src/masoniteorm tests/
 cov:
 	python -m pytest --cov-report term --cov-report xml --cov=src/masoniteorm tests/
-publish:
-	pip install twine
-	make test
-	python setup.py sdist
-	twine upload dist/*
-	rm -fr build dist .egg masonite.egg-info
-	rm -rf dist/*
-pub:
-	python setup.py sdist
-	twine upload dist/*
-	rm -fr build dist .egg masonite.egg-info
-	rm -rf dist/*
-pypirc:
-	cp .pypirc ~/.pypirc
+build:
+	pip install build
+	python -m build

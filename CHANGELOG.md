@@ -6,6 +6,10 @@
 
 - Using `*increments()` for a primary key definition now requires adding `.primary()` to the column definition. `id()` keeps creating the primary key automatically.
 
+### Changed
+
+- Packaging consolidated into `pyproject.toml` (`setup.py` removed); linting and formatting now use `ruff`
+
 ### Fixed
 
 - `*increments()` could not be used for non primary key columns

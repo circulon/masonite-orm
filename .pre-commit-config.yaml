@@ -1,42 +1,17 @@
 repos:
-  - repo: https://github.com/pycqa/isort
-    rev: 6.0.1
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
     hooks:
-      - id: isort
-        args: [--profile=black]
-        exclude: |
-            (?x)(
-                ^build|
-                ^conda
-            )
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+      - id: check-merge-conflict
 
-  - repo: https://github.com/psf/black
-    rev: 25.1.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.13
     hooks:
-      - id: black
-        exclude: |
-            (?x)(
-                ^build|
-                ^conda
-            )
-
-  - repo: https://github.com/pycqa/flake8
-    rev: 7.1.2
-    hooks:
-      - id: flake8
-        additional_dependencies: [flake8-pyproject]
-        exclude: |
-            (?x)(
-                ^build|
-                ^conda
-            )
-
-  - repo: local
-    hooks:
-      - id: check-test-asserts
-        name: Check tests have assertions
-        description: Ensures every test method contains at least one assert statement
-        entry: python scripts/check_test_asserts.py
-        language: system
-        files: ^tests/.*test_.*\.py$
-        pass_filenames: false
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
