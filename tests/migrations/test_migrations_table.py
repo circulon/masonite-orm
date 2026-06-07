@@ -27,3 +27,15 @@ class TestMigrationsTable(unittest.TestCase):
         migration.create_table_if_not_exists()
 
         self.assertTrue(self.schema.has_table("migrations"))
+
+    def test_can_create_table_with_id_against_real_database(self):
+        # Executes the generated DDL so an invalid AUTOINCREMENT definition
+        # cannot slip through the string-based schema tests.
+        self.schema.drop_table_if_exists("id_pk_test")
+
+        with self.schema.create("id_pk_test") as table:
+            table.id()
+            table.string("name")
+
+        self.assertTrue(self.schema.has_table("id_pk_test"))
+        self.schema.drop_table_if_exists("id_pk_test")

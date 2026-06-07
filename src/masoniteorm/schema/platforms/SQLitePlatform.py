@@ -56,9 +56,12 @@ class SQLitePlatform(Platform):
         "tiny_increments": "TINYINT",
         "increments": "INTEGER",
         "big_increments": "BIGINT",
-        "tiny_increments_primary": "TINYINT PRIMARY KEY AUTOINCREMENT",
+        # SQLite only supports AUTOINCREMENT on an INTEGER PRIMARY KEY
+        # column (a 64-bit rowid alias), so every *_increments_primary
+        # variant compiles to the same definition.
+        "tiny_increments_primary": "INTEGER PRIMARY KEY AUTOINCREMENT",
         "increments_primary": "INTEGER PRIMARY KEY AUTOINCREMENT",
-        "big_increments_primary": "BIGINT PRIMARY KEY AUTOINCREMENT",
+        "big_increments_primary": "INTEGER PRIMARY KEY AUTOINCREMENT",
     }
 
     primary_key_type_check = {
@@ -130,7 +133,9 @@ class SQLitePlatform(Platform):
                     ].format(column.name)
                     raise QueryException(msg)
 
-                constraint = "PRIMARY KEY AUTOINCREMENT"
+                # Compile through the *_increments_primary mapping so the
+                # column gets the INTEGER PRIMARY KEY AUTOINCREMENT form.
+                column.column_type = f"{column.column_type}_primary"
 
             if column.length:
                 length = self.create_column_length(column.column_type).format(

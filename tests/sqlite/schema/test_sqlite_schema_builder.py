@@ -250,13 +250,40 @@ class TestSQLiteSchemaBuilder(unittest.TestCase):
                 blueprint.increments("id")
                 blueprint.to_sql()
 
+        with self.assertRaises(QueryException):
             with self.schema.create("users200") as blueprint:
                 blueprint.tiny_increments("id")
                 blueprint.to_sql()
 
+        with self.assertRaises(QueryException):
             with self.schema.create("users200") as blueprint:
                 blueprint.big_increments("id")
                 blueprint.to_sql()
+
+    def test_increments_primary_compile_to_integer_primary_key(self):
+        # SQLite only supports AUTOINCREMENT on INTEGER PRIMARY KEY, so all
+        # *_increments().primary() variants compile to the same definition.
+        with self.schema.create("users") as blueprint:
+            blueprint.id()
+
+        self.assertEqual(
+            blueprint.to_sql(),
+            [
+                'CREATE TABLE "users" '
+                '("id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)'
+            ],
+        )
+
+        with self.schema.create("users") as blueprint:
+            blueprint.big_increments("reference").primary()
+
+        self.assertEqual(
+            blueprint.to_sql(),
+            [
+                'CREATE TABLE "users" '
+                '("reference" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL)'
+            ],
+        )
 
     def test_can_advanced_table_creation2(self):
         with self.schema.create("users") as blueprint:

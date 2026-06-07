@@ -54,9 +54,12 @@ class PostgresPlatform(Platform):
         "year": "YEAR",
         "datetime": "TIMESTAMPTZ",
         "unsigned": "INT",
-        "tiny_increments": "SMALLSERIAL",
-        "increments": "SERIAL",
-        "big_increments": "BIGSERIAL",
+        # Non-primary serial columns keep the UNIQUE constraint the previous
+        # "SERIAL UNIQUE" mapping carried, and stay consistent with MySQL
+        # where an auto-increment column must be keyed.
+        "tiny_increments": "SMALLSERIAL UNIQUE",
+        "increments": "SERIAL UNIQUE",
+        "big_increments": "BIGSERIAL UNIQUE",
         "tiny_increments_primary": "SMALLSERIAL PRIMARY KEY",
         "increments_primary": "SERIAL PRIMARY KEY",
         "big_increments_primary": "BIGSERIAL PRIMARY KEY",

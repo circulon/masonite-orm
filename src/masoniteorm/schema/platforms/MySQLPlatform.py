@@ -44,9 +44,11 @@ class MySQLPlatform(Platform):
         "year": "YEAR",
         "datetime": "DATETIME",
         "unsigned": "INT UNSIGNED",
-        "tiny_increments": "TINYINT UNSIGNED AUTO_INCREMENT",
-        "increments": "INT UNSIGNED AUTO_INCREMENT",
-        "big_increments": "BIGINT UNSIGNED AUTO_INCREMENT",
+        # MySQL requires an AUTO_INCREMENT column to be defined as a key
+        # (error 1075), so non-primary *_increments columns carry UNIQUE.
+        "tiny_increments": "TINYINT UNSIGNED AUTO_INCREMENT UNIQUE",
+        "increments": "INT UNSIGNED AUTO_INCREMENT UNIQUE",
+        "big_increments": "BIGINT UNSIGNED AUTO_INCREMENT UNIQUE",
         "tiny_increments_primary": "TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT",
         "increments_primary": "INT UNSIGNED PRIMARY KEY AUTO_INCREMENT",
         "big_increments_primary": "BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT",

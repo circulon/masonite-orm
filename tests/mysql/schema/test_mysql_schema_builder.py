@@ -177,7 +177,7 @@ class TestMySQLSchemaBuilder(unittest.TestCase):
         self.assertEqual(
             blueprint.to_sql(),
             [
-                "CREATE TABLE `users` (`id` INT UNSIGNED AUTO_INCREMENT NOT NULL, "
+                "CREATE TABLE `users` (`id` INT UNSIGNED AUTO_INCREMENT UNIQUE NOT NULL, "
                 "`id2` BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL, "
                 "`name` VARCHAR(255) NOT NULL, `active` TINYINT(1) NOT NULL, `email` VARCHAR(255) NOT NULL, `gender` ENUM('male', 'female') NOT NULL, "
                 "`password` VARCHAR(255) NOT NULL, `money` DECIMAL(17, 6) NOT NULL, "

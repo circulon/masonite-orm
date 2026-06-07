@@ -1,6 +1,17 @@
 # Change Log
- 
-## [3.0.0] - 2025-12-05
+
+## [Unreleased]
+
+#### Breaking Changes
+
+- Using `*increments()` for a primary key definition now requires adding `.primary()` to the column definition. `id()` keeps creating the primary key automatically.
+
+### Fixed
+
+- `*increments()` could not be used for non primary key columns
+- Schema honors explicitly provided connection details instead of always reloading them from the config file
+
+## [3.0.0] - 2025-03-30
    
 ### Changed
 
@@ -9,7 +20,6 @@
 
 #### Breaking Changes
 
-- Using `*increments()` for a primary key definition now requires adding `.primary()` to the column definition.
 - Changed raw expressions placeholder from requiringing explicit quoring per grammar (like this '?') to automaic (like this ?)
 - Changed `update` and `delete` methods to return the affected rows instead of the model
 - Seeding depencies are now in a separate`[seeder]` extension
@@ -19,7 +29,6 @@
 
 - QueryBuilder requires `database.py` even when passing connection detain in directly
 - Several classes would import DB (ConnectionResolver) from config even if inline connection details are provided   
-- `*increments()` could not be used for non primary key columns
  - Model `update` and `delete` not casting passed values
 
 ## [2.24.0] - 2025-01-23

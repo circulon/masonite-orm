@@ -51,9 +51,12 @@ class MSSQLPlatform(Platform):
         "tiny_increments": "TINYINT IDENTITY",
         "increments": "INT IDENTITY",
         "big_increments": "BIGINT IDENTITY",
-        "tiny_increments_primary": "TINYINT PRIMARY KEY IDENTITY",
-        "increments_primary": "INT PRIMARY KEY IDENTITY",
-        "big_increments_primary": "BIGINT PRIMARY KEY IDENTITY",
+        # The PRIMARY KEY constraint for these is added in columnize() after
+        # the nullability clause: T-SQL expects IDENTITY before any column
+        # constraints ([name] INT IDENTITY NOT NULL PRIMARY KEY).
+        "tiny_increments_primary": "TINYINT IDENTITY",
+        "increments_primary": "INT IDENTITY",
+        "big_increments_primary": "BIGINT IDENTITY",
     }
 
     premapped_nulls = {True: "NULL", False: "NOT NULL"}
@@ -264,6 +267,9 @@ class MSSQLPlatform(Platform):
 
             constraint = ""
             column_constraint = ""
+            if column.column_type.endswith("increments_primary"):
+                constraint = " PRIMARY KEY"
+
             if column.column_type == "enum":
                 values = ", ".join(f"'{x}'" for x in column.values)
                 column_constraint = f" CHECK([{column.name}] IN ({values}))"
