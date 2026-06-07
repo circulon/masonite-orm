@@ -224,7 +224,7 @@ class Schema:
         )
 
     def get_connection(self):
-        """Create"""
+        """Returns the cached connection, creating (and caching) one if needed."""
         if self._dry:
             return
 
@@ -379,5 +379,5 @@ class Schema:
             connection_driver=self._connection_driver,
             connection_details=self.connection_details,
             schema=self.schema,
-            dry=self.dry,
+            dry=self._dry,
         )

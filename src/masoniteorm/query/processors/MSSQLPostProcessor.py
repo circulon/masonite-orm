@@ -24,7 +24,7 @@ class MSSQLPostProcessor:
             dictionary: Should return the modified dictionary.
         """
 
-        last_id = builder.new_connection().query(
+        last_id = builder.get_connection().query(
             "SELECT @@Identity as [id]", results=1
         )
 
