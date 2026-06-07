@@ -4,8 +4,6 @@ import warnings
 
 
 def deprecated(message):
-    warnings.simplefilter("default", DeprecationWarning)
-
     def deprecated_decorator(func):
         def deprecated_func(*args, **kwargs):
             warnings.warn(
