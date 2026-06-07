@@ -487,22 +487,18 @@ class BelongsToMany(BaseRelationship):
         return_query = builder.add_select(
             f"{query.get_table_name()}_count",
             lambda q: (
-                (
-                    q.count("*")
-                    .where_column(
-                        f"{builder.get_table_name()}.{self.local_owner_key}",
-                        f"{self._table}.{self.local_key}",
-                    )
-                    .table(self._table)
-                    .when(
-                        callback,
-                        lambda q: (
-                            q.where_in(
-                                self.foreign_key,
-                                callback(query.select(self.other_owner_key)),
-                            )
-                        ),
-                    )
+                q.count("*")
+                .where_column(
+                    f"{builder.get_table_name()}.{self.local_owner_key}",
+                    f"{self._table}.{self.local_key}",
+                )
+                .table(self._table)
+                .when(
+                    callback,
+                    lambda q: q.where_in(
+                        self.foreign_key,
+                        callback(query.select(self.other_owner_key)),
+                    ),
                 )
             ),
         )

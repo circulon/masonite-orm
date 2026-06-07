@@ -293,7 +293,6 @@ class PostgresPlatform(Platform):
             changed_sql = []
 
             for name, column in table.changed_columns.items():
-
                 column_constraint = ""
                 if column.column_type == "enum":
                     values = ", ".join(f"'{x}'" for x in column.values)

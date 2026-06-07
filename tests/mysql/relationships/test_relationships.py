@@ -180,7 +180,7 @@ class MySQLRelationships(unittest.TestCase):
 
     def test_join_on(self):
         query_sql = User.join_on(
-            "profile", lambda q: (q.where("active", 1))
+            "profile", lambda q: q.where("active", 1)
         ).to_sql()
 
         self.assertEqual(

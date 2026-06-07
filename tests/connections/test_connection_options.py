@@ -115,7 +115,9 @@ class TestSQLiteConnectKwargs(unittest.TestCase):
             full_details={},
         )
         connection.make_connection()
-        result = connection._connection.execute("PRAGMA journal_mode").fetchone()
+        result = connection._connection.execute(
+            "PRAGMA journal_mode"
+        ).fetchone()
         self.assertEqual(result[0].lower(), "memory")
 
     def test_custom_isolation_level_is_respected(self):
@@ -159,12 +161,16 @@ class TestMSSQLConnectionString(unittest.TestCase):
                 "integrated_security": "SSPI",
             }
         )._build_connection_string()
-        self.assertIn("DRIVER=ODBC Driver 18 for SQL Server", connection_string)
+        self.assertIn(
+            "DRIVER=ODBC Driver 18 for SQL Server", connection_string
+        )
         self.assertIn("SERVER=localhost\\SQLEXPRESS,1433", connection_string)
         self.assertIn("Connection Timeout=5", connection_string)
         self.assertIn("Integrated Security=SSPI", connection_string)
         self.assertIn("Trusted_Connection=yes", connection_string)
-        self.assertIn("Authentication=ActiveDirectoryPassword", connection_string)
+        self.assertIn(
+            "Authentication=ActiveDirectoryPassword", connection_string
+        )
 
     def test_extra_options_appended_verbatim(self):
         connection_string = self.get_connection(

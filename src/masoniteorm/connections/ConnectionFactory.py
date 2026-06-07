@@ -52,8 +52,4 @@ class ConnectionFactory:
         if connection:
             return connection
 
-        raise Exception(
-            "The '{connection}' connection does not exist".format(
-                connection=key
-            )
-        )
+        raise Exception(f"The '{key}' connection does not exist")

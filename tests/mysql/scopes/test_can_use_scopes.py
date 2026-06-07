@@ -2,7 +2,6 @@ import unittest
 
 from src.masoniteorm.models import Model
 from src.masoniteorm.scopes import SoftDeletesMixin, scope
-from tests.User import User
 
 
 class User(Model):

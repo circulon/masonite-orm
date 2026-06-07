@@ -72,9 +72,11 @@ class TestMySQLQmark(unittest.TestCase):
 
     def test_can_compile_sub_group_bindings(self):
         mark = self.builder.where(
-            lambda query: query.where("challenger", 1)
-            .or_where("proposer", 1)
-            .or_where("referee", 1)
+            lambda query: (
+                query.where("challenger", 1)
+                .or_where("proposer", 1)
+                .or_where("referee", 1)
+            )
         )
         query_sql = mark.to_qmark()
         expected_sql = "SELECT * FROM `users` WHERE (`users`.`challenger` = ? OR `users`.`proposer` = ? OR `users`.`referee` = ?)"

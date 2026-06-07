@@ -1,6 +1,4 @@
-flake8-pyproject
-black
-isort
+ruff
 faker
 pytest
 pytest-env

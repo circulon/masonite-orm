@@ -23,7 +23,9 @@ class TestCollection(unittest.TestCase):
         self.assertEqual(collection.last(lambda x: x < 3), 2)
 
     def test_pluck(self):
-        collection = Collection([{"id": 1, "name": "Joe"}, {"id": 2, "name": "Bob"}])
+        collection = Collection(
+            [{"id": 1, "name": "Joe"}, {"id": 2, "name": "Bob"}]
+        )
         self.assertEqual(collection.pluck("id"), [1, 2])
         self.assertEqual(collection.pluck("id").serialize(), [1, 2])
         self.assertEqual(collection.pluck("name", "id"), {1: "Joe", 2: "Bob"})
@@ -93,9 +95,15 @@ class TestCollection(unittest.TestCase):
                 {"id": 4},
             ]
         )
-        self.assertEqual(len(nested_collection.where_in("is_active", [False])), 0)
-        self.assertEqual(len(nested_collection.where_in("is_active", [True])), 3)
-        self.assertEqual(len(nested_collection.where_in("is_active", [True, False])), 3)
+        self.assertEqual(
+            len(nested_collection.where_in("is_active", [False])), 0
+        )
+        self.assertEqual(
+            len(nested_collection.where_in("is_active", [True])), 3
+        )
+        self.assertEqual(
+            len(nested_collection.where_in("is_active", [True, False])), 3
+        )
         obj_collection = Collection(
             [
                 type("", (), {"is_active": True, "is_disabled": False}),
@@ -105,12 +113,21 @@ class TestCollection(unittest.TestCase):
         )
         self.assertEqual(len(obj_collection.where_in("is_active", [False])), 1)
         self.assertEqual(len(obj_collection.where_in("is_active", [True])), 2)
-        self.assertEqual(len(obj_collection.where_in("is_active", [True, False])), 3)
-        self.assertEqual(len(obj_collection.where_in("nonexistent_key", [False])), 0)
-        self.assertEqual(len(obj_collection.where_in("nonexistent_key", [True])), 0)
+        self.assertEqual(
+            len(obj_collection.where_in("is_active", [True, False])), 3
+        )
+        self.assertEqual(
+            len(obj_collection.where_in("nonexistent_key", [False])), 0
+        )
+        self.assertEqual(
+            len(obj_collection.where_in("nonexistent_key", [True])), 0
+        )
 
     def test_where_in_bytes(self):
-        byte_strs = [bytes("should find this", "utf-8"), bytes("and this", "utf-8")]
+        byte_strs = [
+            bytes("should find this", "utf-8"),
+            bytes("and this", "utf-8"),
+        ]
         collection = Collection(
             [
                 {"id": 1, "name": "Joe", "bytes_val": byte_strs[0]},
@@ -124,7 +141,9 @@ class TestCollection(unittest.TestCase):
             ]
         )
         self.assertEqual(len(collection.where_in("bytes_val", byte_strs)), 2)
-        self.assertEqual(len(collection.where_in("bytes_val", [byte_strs[0]])), 1)
+        self.assertEqual(
+            len(collection.where_in("bytes_val", [byte_strs[0]])), 1
+        )
 
     def test_pop(self):
         collection = Collection([1, 2, 3])
@@ -228,7 +247,10 @@ class TestCollection(unittest.TestCase):
         self.assertEqual(collection.count(), 4)
 
         collection = Collection(
-            [{"name": "Corentin All", "age": 1}, {"name": "Corentin All", "age": 2}]
+            [
+                {"name": "Corentin All", "age": 1},
+                {"name": "Corentin All", "age": 2},
+            ]
         )
         self.assertEqual(collection.count(), 2)
 
@@ -236,7 +258,9 @@ class TestCollection(unittest.TestCase):
         collection = Collection([1, 1, 2, 4])
 
         chunked = collection.chunk(2)
-        self.assertEqual(chunked, Collection([Collection([1, 1]), Collection([2, 4])]))
+        self.assertEqual(
+            chunked, Collection([Collection([1, 1]), Collection([2, 4])])
+        )
 
         collection = Collection(
             [
@@ -350,7 +374,10 @@ class TestCollection(unittest.TestCase):
 
         self.assertEqual(
             Collection(
-                [{"name": "Corentin All", "age": 3}, {"name": "Corentin All", "age": 4}]
+                [
+                    {"name": "Corentin All", "age": 3},
+                    {"name": "Corentin All", "age": 4},
+                ]
             ),
             collection.all(),
         )
@@ -393,7 +420,9 @@ class TestCollection(unittest.TestCase):
             ],
         )
 
-        self.assertEqual(collection.pluck("name").unique().all(), ["Corentin All"])
+        self.assertEqual(
+            collection.pluck("name").unique().all(), ["Corentin All"]
+        )
 
     def test_transform(self):
         collection = Collection([1, 1, 2, 3, 4])
@@ -510,7 +539,8 @@ class TestCollection(unittest.TestCase):
 
         currencies = collection.map_into(Currency)
         self.assertEqual(
-            currencies.all(), [Currency("USD"), Currency("EUR"), Currency("GBP")]
+            currencies.all(),
+            [Currency("USD"), Currency("EUR"), Currency("GBP")],
         )
 
     def test_map(self):
@@ -647,7 +677,10 @@ class TestCollection(unittest.TestCase):
         self.assertEqual(
             grouped,
             {
-                10: [{"name": "Corentin", "age": 10}, {"name": "Joe", "age": 10}],
+                10: [
+                    {"name": "Corentin", "age": 10},
+                    {"name": "Joe", "age": 10},
+                ],
                 20: [{"name": "Marlysson", "age": 20}],
             },
         )

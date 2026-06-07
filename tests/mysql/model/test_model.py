@@ -8,7 +8,6 @@ import pendulum
 from src.masoniteorm.collection import Collection
 from src.masoniteorm.exceptions import ModelNotFound
 from src.masoniteorm.models import Model
-from tests.User import User
 
 
 class ProfileFillable(Model):
