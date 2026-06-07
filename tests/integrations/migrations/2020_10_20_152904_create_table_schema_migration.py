@@ -4,7 +4,6 @@ from src.masoniteorm.migrations import Migration
 
 
 class CreateTableSchemaMigration(Migration):
-
     def up(self):
         """
         Run the migrations.

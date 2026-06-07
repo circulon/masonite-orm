@@ -26,13 +26,14 @@ class TestSQLiteSchemaBuilderAlter(unittest.TestCase):
 
         self.assertEqual(len(blueprint.table.added_columns), 3)
 
-        sql = [
+        expected_sql = [
             'ALTER TABLE "users" ADD COLUMN "name" VARCHAR NOT NULL',
             """ALTER TABLE "users" ADD COLUMN "external_type" VARCHAR NOT NULL DEFAULT 'external'""",
             'ALTER TABLE "users" ADD COLUMN "age" INTEGER NOT NULL',
         ]
 
-        self.assertEqual(blueprint.to_sql(), sql)
+        query_sql = blueprint.to_sql()
+        self.assertEqual(query_sql, expected_sql)
 
     def test_can_add_constraints(self):
         with self.schema.table("users") as blueprint:
@@ -40,9 +41,10 @@ class TestSQLiteSchemaBuilderAlter(unittest.TestCase):
 
         self.assertEqual(len(blueprint.table.added_columns), 0)
 
-        sql = ['CREATE UNIQUE INDEX table_unique ON "users"(name)']
+        expected_sql = ['CREATE UNIQUE INDEX table_unique ON "users"(name)']
 
-        self.assertEqual(blueprint.to_sql(), sql)
+        query_sql = blueprint.to_sql()
+        self.assertEqual(query_sql, expected_sql)
 
     def test_alter_rename(self):
         with self.schema.table("users") as blueprint:
@@ -52,7 +54,7 @@ class TestSQLiteSchemaBuilderAlter(unittest.TestCase):
         table.add_column("post", "integer")
         blueprint.table.from_table = table
 
-        sql = [
+        expected_sql = [
             "CREATE TEMPORARY TABLE __temp__users AS SELECT post FROM users",
             'DROP TABLE "users"',
             'CREATE TABLE "users" ("comment" INTEGER NOT NULL)',
@@ -60,7 +62,8 @@ class TestSQLiteSchemaBuilderAlter(unittest.TestCase):
             "DROP TABLE __temp__users",
         ]
 
-        self.assertEqual(blueprint.to_sql(), sql)
+        query_sql = blueprint.to_sql()
+        self.assertEqual(query_sql, expected_sql)
 
     def test_alter_drop(self):
         with self.schema.table("users") as blueprint:
@@ -72,7 +75,7 @@ class TestSQLiteSchemaBuilderAlter(unittest.TestCase):
         table.add_column("email", "string")
         blueprint.table.from_table = table
 
-        sql = [
+        expected_sql = [
             "CREATE TEMPORARY TABLE __temp__users AS SELECT name, email FROM users",
             'DROP TABLE "users"',
             'CREATE TABLE "users" ("name" VARCHAR NOT NULL, "email" VARCHAR NOT NULL)',
@@ -80,7 +83,8 @@ class TestSQLiteSchemaBuilderAlter(unittest.TestCase):
             "DROP TABLE __temp__users",
         ]
 
-        self.assertEqual(blueprint.to_sql(), sql)
+        query_sql = blueprint.to_sql()
+        self.assertEqual(query_sql, expected_sql)
 
     def test_change(self):
         with self.schema.table("users") as blueprint:
@@ -94,7 +98,7 @@ class TestSQLiteSchemaBuilderAlter(unittest.TestCase):
 
         blueprint.table.from_table = table
 
-        sql = [
+        expected_sql = [
             'ALTER TABLE "users" ADD COLUMN "name" VARCHAR NOT NULL',
             "CREATE TEMPORARY TABLE __temp__users AS SELECT age FROM users",
             'DROP TABLE "users"',
@@ -103,7 +107,8 @@ class TestSQLiteSchemaBuilderAlter(unittest.TestCase):
             "DROP TABLE __temp__users",
         ]
 
-        self.assertEqual(blueprint.to_sql(), sql)
+        query_sql = blueprint.to_sql()
+        self.assertEqual(query_sql, expected_sql)
 
     def test_drop_add_and_change(self):
         with self.schema.table("users") as blueprint:
@@ -139,19 +144,39 @@ class TestSQLiteSchemaBuilderAlter(unittest.TestCase):
 
         blueprint.table.from_table = table
 
-        sql = ['ALTER TABLE "users" ADD COLUMN "due_date" TIMESTAMP NULL']
+        expected_sql = [
+            'ALTER TABLE "users" ADD COLUMN "due_date" TIMESTAMP NULL'
+        ]
 
-        self.assertEqual(blueprint.to_sql(), sql)
+        query_sql = blueprint.to_sql()
+        self.assertEqual(query_sql, expected_sql)
+
+    def test_alter_drop_on_table_schema_table(self):
+        schema = Schema(connection="dev", connection_details=DATABASES).on(
+            "dev"
+        )
+
+        with schema.table("table_schema") as blueprint:
+            blueprint.drop_column("name")
+
+        self.assertEqual(blueprint.table.dropped_columns, ["name"])
+
+        with schema.table("table_schema") as blueprint:
+            blueprint.string("name").nullable()
+
+        self.assertIn("name", blueprint.table.added_columns)
+
 
     def test_alter_add_primary(self):
         with self.schema.table("users") as blueprint:
             blueprint.primary("playlist_id")
 
-        sql = [
+        expected_sql = [
             'ALTER TABLE "users" ADD CONSTRAINT users_playlist_id_primary PRIMARY KEY (playlist_id)'
         ]
 
-        self.assertEqual(blueprint.to_sql(), sql)
+        query_sql = blueprint.to_sql()
+        self.assertEqual(query_sql, expected_sql)
 
     def test_alter_add_column_and_foreign_key(self):
         with self.schema.table("users") as blueprint:
@@ -166,7 +191,7 @@ class TestSQLiteSchemaBuilderAlter(unittest.TestCase):
 
         blueprint.table.from_table = table
 
-        sql = [
+        expected_sql = [
             'ALTER TABLE "users" ADD COLUMN "playlist_id" INTEGER NULL REFERENCES "playlists"("id")',
             "CREATE TEMPORARY TABLE __temp__users AS SELECT age, email FROM users",
             'DROP TABLE "users"',
@@ -176,7 +201,8 @@ class TestSQLiteSchemaBuilderAlter(unittest.TestCase):
             "DROP TABLE __temp__users",
         ]
 
-        self.assertEqual(blueprint.to_sql(), sql)
+        query_sql = blueprint.to_sql()
+        self.assertEqual(query_sql, expected_sql)
 
     def test_alter_add_foreign_key_only(self):
         with self.schema.table("users") as blueprint:
@@ -190,7 +216,7 @@ class TestSQLiteSchemaBuilderAlter(unittest.TestCase):
 
         blueprint.table.from_table = table
 
-        sql = [
+        expected_sql = [
             "CREATE TEMPORARY TABLE __temp__users AS SELECT age, email FROM users",
             'DROP TABLE "users"',
             'CREATE TABLE "users" ("age" VARCHAR NOT NULL, "email" VARCHAR NOT NULL, '
@@ -199,7 +225,8 @@ class TestSQLiteSchemaBuilderAlter(unittest.TestCase):
             "DROP TABLE __temp__users",
         ]
 
-        self.assertEqual(blueprint.to_sql(), sql)
+        query_sql = blueprint.to_sql()
+        self.assertEqual(query_sql, expected_sql)
 
     def test_can_add_column_enum(self):
         with self.schema.table("users") as blueprint:
@@ -207,11 +234,12 @@ class TestSQLiteSchemaBuilderAlter(unittest.TestCase):
 
         self.assertEqual(len(blueprint.table.added_columns), 1)
 
-        sql = [
+        expected_sql = [
             "ALTER TABLE \"users\" ADD COLUMN \"status\" VARCHAR CHECK('status' IN('active', 'inactive')) NOT NULL DEFAULT 'active'"
         ]
 
-        self.assertEqual(blueprint.to_sql(), sql)
+        query_sql = blueprint.to_sql()
+        self.assertEqual(query_sql, expected_sql)
 
     def test_can_change_column_enum(self):
         with self.schema.table("users") as blueprint:
@@ -223,7 +251,7 @@ class TestSQLiteSchemaBuilderAlter(unittest.TestCase):
 
         self.assertEqual(len(blueprint.table.changed_columns), 1)
 
-        sql = [
+        expected_sql = [
             "CREATE TEMPORARY TABLE __temp__users AS SELECT  FROM users",
             'DROP TABLE "users"',
             "CREATE TABLE \"users\" (\"status\" VARCHAR(255) CHECK(status IN ('active', 'inactive')) NOT NULL DEFAULT 'active')",
@@ -231,4 +259,5 @@ class TestSQLiteSchemaBuilderAlter(unittest.TestCase):
             "DROP TABLE __temp__users",
         ]
 
-        self.assertEqual(blueprint.to_sql(), sql)
+        query_sql = blueprint.to_sql()
+        self.assertEqual(query_sql, expected_sql)

@@ -401,7 +401,15 @@ class SQLitePlatform(Platform):
     def get_current_schema(self, connection, table_name, schema=None):
         sql = f"PRAGMA table_info({table_name})"
 
-        reversed_type_map = {v: k for k, v in self.type_map.items()}
+        # PRAGMA table_info returns bare storage types (e.g. INTEGER), so
+        # reverse-map them to the plain column types. The increments family
+        # shares storage types with the integer family and must not win the
+        # reversal: a non-primary increments column would raise on rebuild.
+        reversed_type_map = {
+            v: k
+            for k, v in self.type_map.items()
+            if not k.endswith(("increments", "increments_primary"))
+        }
         table = Table(table_name)
 
         result = connection.query(sql, ())
