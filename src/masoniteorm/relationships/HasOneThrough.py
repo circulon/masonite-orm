@@ -226,7 +226,7 @@ class HasOneThrough(BaseRelationship):
                 f"{int_table}.{self.local_owner_key}",
                 f"{current_builder.get_table_name()}.{self.local_key}",
             )
-            .when(callback, lambda q: (callback(q)))
+            .when(callback, lambda q: callback(q))
         )
 
     def get_with_count_query(self, current_builder, callback):
@@ -239,32 +239,26 @@ class HasOneThrough(BaseRelationship):
         return_query = current_builder.add_select(
             f"{self.attribute}_count",
             lambda q: (
-                (
-                    q.count("*")
-                    .join(
-                        f"{int_table}",
-                        f"{int_table}.{self.foreign_key}",
-                        "=",
-                        f"{dist_table}.{self.other_owner_key}",
-                    )
-                    .where_column(
-                        f"{int_table}.{self.local_owner_key}",
-                        f"{current_builder.get_table_name()}.{self.local_key}",
-                    )
-                    .table(dist_table)
-                    .when(
-                        callback,
-                        lambda q: (
-                            q.where_in(
-                                self.foreign_key,
-                                callback(
-                                    self.distant_builder.select(
-                                        self.other_owner_key
-                                    )
-                                ),
-                            )
+                q.count("*")
+                .join(
+                    f"{int_table}",
+                    f"{int_table}.{self.foreign_key}",
+                    "=",
+                    f"{dist_table}.{self.other_owner_key}",
+                )
+                .where_column(
+                    f"{int_table}.{self.local_owner_key}",
+                    f"{current_builder.get_table_name()}.{self.local_key}",
+                )
+                .table(dist_table)
+                .when(
+                    callback,
+                    lambda q: q.where_in(
+                        self.foreign_key,
+                        callback(
+                            self.distant_builder.select(self.other_owner_key)
                         ),
-                    )
+                    ),
                 )
             ),
         )

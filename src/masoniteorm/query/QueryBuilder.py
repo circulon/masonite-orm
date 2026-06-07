@@ -237,17 +237,6 @@ class QueryBuilder(ObservesEvents):
         """
         return self._table.name
 
-    def get_connection(self):
-        """Sets a table on the query builder
-
-        Arguments:
-            table {string} -- The name of the table
-
-        Returns:
-            self
-        """
-        return self.connection_class
-
     def begin(self):
         """Sets a table on the query builder
 
@@ -287,17 +276,6 @@ class QueryBuilder(ObservesEvents):
         """
         self._connection.rollback()
         return self
-
-    def get_relation(self, key):
-        """Sets a table on the query builder
-
-        Arguments:
-            table {string} -- The name of the table
-
-        Returns:
-            self
-        """
-        return getattr(self.owner, key)
 
     def set_scope(self, name, callable):
         """Sets a scope based on a class and maps it to a name.
@@ -373,7 +351,7 @@ class QueryBuilder(ObservesEvents):
         """
         if attribute == "__setstate__":
             raise AttributeError(
-                "'QueryBuilder' object has no attribute '{}'".format(attribute)
+                f"'QueryBuilder' object has no attribute '{attribute}'"
             )
 
         if attribute in self._scopes:
@@ -395,7 +373,7 @@ class QueryBuilder(ObservesEvents):
             return method
 
         raise AttributeError(
-            "'QueryBuilder' object has no attribute '{}'".format(attribute)
+            f"'QueryBuilder' object has no attribute '{attribute}'"
         )
 
     def on(self, connection):
@@ -1699,7 +1677,7 @@ class QueryBuilder(ObservesEvents):
         Returns:
             self
         """
-        self.aggregate("SUM", "{column}".format(column=column))
+        self.aggregate("SUM", f"{column}")
         return self
 
     def count(self, column=None, dry=False):
@@ -1748,7 +1726,7 @@ class QueryBuilder(ObservesEvents):
         Returns:
             self
         """
-        self.aggregate("MAX", "{column}".format(column=column))
+        self.aggregate("MAX", f"{column}")
         return self
 
     def order_by(self, column, direction="ASC"):
@@ -2315,7 +2293,7 @@ class QueryBuilder(ObservesEvents):
         Returns:
             self
         """
-        self.aggregate("AVG", "{column}".format(column=column))
+        self.aggregate("AVG", f"{column}")
         return self
 
     def min(self, column):
@@ -2327,7 +2305,7 @@ class QueryBuilder(ObservesEvents):
         Returns:
             self
         """
-        self.aggregate("MIN", "{column}".format(column=column))
+        self.aggregate("MIN", f"{column}")
         return self
 
     def _extract_operator_value(self, *args):
@@ -2357,8 +2335,9 @@ class QueryBuilder(ObservesEvents):
 
         if operator not in operators:
             raise ValueError(
-                "Invalid comparison operator. The operator can be %s"
-                % ", ".join(operators)
+                "Invalid comparison operator. The operator can be {}".format(
+                    ", ".join(operators)
+                )
             )
 
         return operator, value

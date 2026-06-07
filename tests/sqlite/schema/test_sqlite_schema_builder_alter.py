@@ -166,7 +166,6 @@ class TestSQLiteSchemaBuilderAlter(unittest.TestCase):
 
         self.assertIn("name", blueprint.table.added_columns)
 
-
     def test_alter_add_primary(self):
         with self.schema.table("users") as blueprint:
             blueprint.primary("playlist_id")

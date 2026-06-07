@@ -52,7 +52,9 @@ class Command(BaseCommand):
         # allow overriding option defaults per instance
         self.overriden_default = kwargs
         for definition_option in self._definition.options:
-            default = self.overriden_default.get(underscore(definition_option.name))
+            default = self.overriden_default.get(
+                underscore(definition_option.name)
+            )
             if default:
                 definition_option.set_default(default)
 
@@ -169,5 +171,9 @@ class Command(BaseCommand):
             optional = True
 
         return argument(
-            spec, description, optional=optional, multiple=multiple, default=default
+            spec,
+            description,
+            optional=optional,
+            multiple=multiple,
+            default=default,
         )

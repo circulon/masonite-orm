@@ -163,7 +163,7 @@ class Migration:
                 migration_class.schema.dry()
             start = timer()
             migration_class.up()
-            duration = "{:.2f}".format(timer() - start)
+            duration = f"{timer() - start:.2f}"
 
             if output:
                 if self.command_class:
@@ -217,7 +217,7 @@ class Migration:
 
             start = timer()
             migration_class.down()
-            duration = "{:.2f}".format(timer() - start)
+            duration = f"{timer() - start:.2f}"
 
             if output:
                 if self.command_class:

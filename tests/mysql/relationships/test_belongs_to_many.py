@@ -48,7 +48,7 @@ class MySQLRelationships(unittest.TestCase):
 
     def test_belongs_to_many(self):
         query_sql = Permission.where_has(
-            "role", lambda query: (query.where("slug", "users"))
+            "role", lambda query: query.where("slug", "users")
         ).to_sql()
 
         self.assertEqual(

@@ -188,12 +188,10 @@ class Collection:
         def _flatten(items):
             if isinstance(items, dict):
                 for v in items.values():
-                    for x in _flatten(v):
-                        yield x
+                    yield from _flatten(v)
             elif isinstance(items, list):
                 for i in items:
-                    for j in _flatten(i):
-                        yield j
+                    yield from _flatten(i)
             else:
                 yield items
 
@@ -550,8 +548,7 @@ class Collection:
         return operators[op](str(a), str(b))
 
     def __iter__(self):
-        for item in self._items:
-            yield item
+        yield from self._items
 
     def __eq__(self, other):
         other = self.__get_items(other)

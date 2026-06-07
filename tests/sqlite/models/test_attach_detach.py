@@ -44,7 +44,9 @@ class TestAttachDetach(unittest.TestCase):
         with self.schema.create_table_if_not_exists("bottle_lids") as table:
             table.integer("id").primary()
             table.string("colour")
-            table.integer("bottle_id", nullable=True)  # HasOne / BelongsTo relationship
+            table.integer(
+                "bottle_id", nullable=True
+            )  # HasOne / BelongsTo relationship
 
     def tearDown(self):
         BottleLid.delete()

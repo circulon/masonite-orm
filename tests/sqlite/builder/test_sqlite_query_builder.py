@@ -227,9 +227,11 @@ class SQLiteQueryBuilderTest(unittest.TestCase):
             "some_table"
         ).add_select(
             "other_test",
-            lambda query: query.max("updated_at")
-            .from_("different_table")
-            .where("some_id", "=", "3"),
+            lambda query: (
+                query.max("updated_at")
+                .from_("different_table")
+                .where("some_id", "=", "3")
+            ),
         )
         query_sql = builder.to_sql()
         expected_sql = (

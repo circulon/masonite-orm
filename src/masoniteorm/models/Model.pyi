@@ -1,9 +1,8 @@
-from typing import Any, Callable, Dict
+from typing import Any, Callable
 
 from ..query.QueryBuilder import QueryBuilder
 
 class Model:
-
     # ==============================
     # Model Methods
     # ==============================
@@ -33,7 +32,7 @@ class Model:
         """
         pass
 
-    def cast_values(self, attributes: Dict[str, Any]) -> Dict[str, Any]:
+    def cast_values(self, attributes: dict[str, Any]) -> dict[str, Any]:
         """
         Runs provided dictionary through all model casters and returns the result.
 
@@ -94,7 +93,7 @@ class Model:
         pass
 
     @classmethod
-    def filter_fillable(cls, dictionary: Dict[str, Any]) -> Dict[str, Any]:
+    def filter_fillable(cls, dictionary: dict[str, Any]) -> dict[str, Any]:
         """
         Filters provided dictionary to only include fields specified in the model's __fillable__ property
 
@@ -104,8 +103,8 @@ class Model:
 
     @classmethod
     def filter_mass_assignment(
-        cls, dictionary: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        cls, dictionary: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Filters the provided dictionary in preparation for a mass-assignment operation
 
@@ -114,7 +113,7 @@ class Model:
         pass
 
     @classmethod
-    def filter_guarded(cls, dictionary: Dict[str, Any]) -> Dict[str, Any]:
+    def filter_guarded(cls, dictionary: dict[str, Any]) -> dict[str, Any]:
         """
         Filters provided dictionary to exclude fields specified in the model's __guarded__ property
 
@@ -404,7 +403,6 @@ class Model:
     # all marked as @classmethod for IDE
     # autocomplete to work correctly
     # ==============================
-
     @classmethod
     def add_select(cls, alias: str, callable: Any) -> QueryBuilder:
         """Specifies columns that should be selected
@@ -931,7 +929,7 @@ class Model:
         pass
 
     @classmethod
-    def or_where_exists(cls, value: "str|int|QueryBuilder") -> QueryBuilder:
+    def or_where_exists(cls, value: str | int | QueryBuilder) -> QueryBuilder:
         """Specifies a where exists expression.
 
         Arguments:
@@ -944,7 +942,7 @@ class Model:
 
     @classmethod
     def or_where_not_exists(
-        cls, value: "str|int|QueryBuilder"
+        cls, value: str | int | QueryBuilder
     ) -> QueryBuilder:
         """Specifies a where exists expression.
 

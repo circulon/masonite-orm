@@ -254,9 +254,7 @@ class BaseTestCaseSelectGrammar:
             self.builder.new()
             .where_in(
                 "age",
-                lambda q: (
-                    q.select("age").where("age", 2).where("name", "Joe")
-                ),
+                lambda q: q.select("age").where("age", 2).where("name", "Joe"),
             )
             .to_sql()
         )
@@ -394,8 +392,8 @@ class BaseTestCaseSelectGrammar:
     def test_can_compile_join_clause_with_lambda(self):
         to_sql = self.builder.join(
             "report_groups as rg",
-            lambda clause: (
-                clause.on("bgt.fund", "=", "rg.fund").on_null("bgt")
+            lambda clause: clause.on("bgt.fund", "=", "rg.fund").on_null(
+                "bgt"
             ),
         ).to_sql()
 
@@ -407,8 +405,8 @@ class BaseTestCaseSelectGrammar:
     def test_can_compile_left_join_clause_with_lambda(self):
         to_sql = self.builder.left_join(
             "report_groups as rg",
-            lambda clause: (
-                clause.on("bgt.fund", "=", "rg.fund").or_on_null("bgt")
+            lambda clause: clause.on("bgt.fund", "=", "rg.fund").or_on_null(
+                "bgt"
             ),
         ).to_sql()
 
@@ -420,8 +418,8 @@ class BaseTestCaseSelectGrammar:
     def test_can_compile_right_join_clause_with_lambda(self):
         to_sql = self.builder.right_join(
             "report_groups as rg",
-            lambda clause: (
-                clause.on("bgt.fund", "=", "rg.fund").or_on_null("bgt")
+            lambda clause: clause.on("bgt.fund", "=", "rg.fund").or_on_null(
+                "bgt"
             ),
         ).to_sql()
 

@@ -413,9 +413,7 @@ class Blueprint:
         self._last_column = self.table.add_column(
             column,
             "decimal",
-            length="{length}, {precision}".format(
-                length=length, precision=precision
-            ),
+            length=f"{length}, {precision}",
             nullable=nullable,
         )
         return self
@@ -437,9 +435,7 @@ class Blueprint:
         self._last_column = self.table.add_column(
             column,
             "float",
-            length="{length}, {precision}".format(
-                length=length, precision=precision
-            ),
+            length=f"{length}, {precision}",
             nullable=nullable,
         )
         return self
@@ -478,7 +474,7 @@ class Blueprint:
         options = options or []
         new_options = ""
         for option in options:
-            new_options += "'{}',".format(option)
+            new_options += f"'{option}',"
         new_options = new_options.rstrip(",")
         self._last_column = self.table.add_column(
             column, "enum", length="255", values=options, nullable=nullable
@@ -537,9 +533,7 @@ class Blueprint:
         self._last_column = self.table.add_column(
             column,
             "decimal",
-            length="{length}, {precision}".format(
-                length=length, precision=precision
-            ),
+            length=f"{length}, {precision}",
             nullable=nullable,
         ).unsigned()
         return self
@@ -753,12 +747,12 @@ class Blueprint:
         _columns = []
         _columns.append(
             self.table.add_column(
-                "{}_id".format(column), "integer", nullable=nullable
+                f"{column}_id", "integer", nullable=nullable
             ).unsigned()
         )
         _columns.append(
             self.table.add_column(
-                "{}_type".format(column),
+                f"{column}_type",
                 "string",
                 nullable=nullable,
                 length=self._default_string_length,

@@ -1,4 +1,5 @@
 import unittest
+
 from cleo.testers.command_tester import CommandTester
 
 from src.masoniteorm.commands import ShellCommand
@@ -38,7 +39,9 @@ class TestShellCommand(unittest.TestCase):
             "full_details": {"driver": "postgres"},
         }
         command, env = self.command.get_command(config)
-        assert command == "psql orm --host localhost --port 1234 --username root"
+        assert (
+            command == "psql orm --host localhost --port 1234 --username root"
+        )
         assert env.get("PGPASSWORD", "secretpostgres")
 
     def test_for_sqlite(self):
@@ -85,5 +88,6 @@ class TestShellCommand(unittest.TestCase):
         command, _ = self.command.get_command(config)
         cleaned_command = self.command.hide_sensitive_options(config, command)
         assert (
-            cleaned_command == "mysql orm --host localhost --user root --password ***"
+            cleaned_command
+            == "mysql orm --host localhost --user root --password ***"
         )
