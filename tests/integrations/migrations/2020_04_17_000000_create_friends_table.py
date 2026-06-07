@@ -2,7 +2,6 @@ from src.masoniteorm.migrations.Migration import Migration
 
 
 class CreateFriendsTable(Migration):
-
     def up(self):
         """
         Run the migrations.

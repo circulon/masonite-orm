@@ -24,32 +24,33 @@ class TestMSSQLSchemaBuilder(unittest.TestCase):
             blueprint.integer("age")
 
         self.assertEqual(len(blueprint.table.added_columns), 2)
-        self.assertEqual(
-            blueprint.to_sql(),
-            [
-                "CREATE TABLE [users] ([name] VARCHAR(255) NOT NULL, [age] INT NOT NULL)"
-            ],
-        )
+        query_sql = blueprint.to_sql()
+        expected_sql = [
+            "CREATE TABLE [users] ([name] VARCHAR(255) NOT NULL, [age] INT NOT NULL)"
+        ]
+        self.assertEqual(query_sql, expected_sql)
 
     def test_can_add_tiny_text(self):
         with self.schema.create("users") as blueprint:
             blueprint.tiny_text("description")
 
         self.assertEqual(len(blueprint.table.added_columns), 1)
-        self.assertEqual(
-            blueprint.to_sql(),
-            ["CREATE TABLE [users] ([description] TINYTEXT NOT NULL)"],
-        )
+        query_sql = blueprint.to_sql()
+        expected_sql = [
+            "CREATE TABLE [users] ([description] TINYTEXT NOT NULL)"
+        ]
+        self.assertEqual(query_sql, expected_sql)
 
     def test_can_add_unsigned_decimal(self):
         with self.schema.create("users") as blueprint:
             blueprint.unsigned_decimal("amount", 19, 4)
 
         self.assertEqual(len(blueprint.table.added_columns), 1)
-        self.assertEqual(
-            blueprint.to_sql(),
-            ["CREATE TABLE [users] ([amount] DECIMAL(19, 4) NOT NULL)"],
-        )
+        query_sql = blueprint.to_sql()
+        expected_sql = [
+            "CREATE TABLE [users] ([amount] DECIMAL(19, 4) NOT NULL)"
+        ]
+        self.assertEqual(query_sql, expected_sql)
 
     def test_can_add_columns_with_constaint(self):
         with self.schema.create("users") as blueprint:
@@ -58,24 +59,21 @@ class TestMSSQLSchemaBuilder(unittest.TestCase):
             blueprint.unique("name")
 
         self.assertEqual(len(blueprint.table.added_columns), 2)
-        self.assertEqual(
-            blueprint.to_sql(),
-            [
-                "CREATE TABLE [users] ([name] VARCHAR(255) NOT NULL, [age] INT NOT NULL, CONSTRAINT users_name_unique UNIQUE (name))"
-            ],
-        )
+        query_sql = blueprint.to_sql()
+        expected_sql = [
+            "CREATE TABLE [users] ([name] VARCHAR(255) NOT NULL, [age] INT NOT NULL, CONSTRAINT users_name_unique UNIQUE (name))"
+        ]
+        self.assertEqual(query_sql, expected_sql)
 
     def test_can_have_float_type(self):
         with self.schema.create("users") as blueprint:
             blueprint.float("amount")
 
-        self.assertEqual(
-            blueprint.to_sql(),
-            [
-                """CREATE TABLE [users] ("""
-                """[amount] FLOAT(19, 4) NOT NULL)"""
-            ],
-        )
+        query_sql = blueprint.to_sql()
+        expected_sql = [
+            """CREATE TABLE [users] (""" """[amount] FLOAT(19, 4) NOT NULL)"""
+        ]
+        self.assertEqual(query_sql, expected_sql)
 
     def test_can_have_unsigned_columns(self):
         with self.schema.create("users") as blueprint:
@@ -85,17 +83,16 @@ class TestMSSQLSchemaBuilder(unittest.TestCase):
             blueprint.small_integer("small_profile_id").unsigned()
             blueprint.medium_integer("medium_profile_id").unsigned()
 
-        self.assertEqual(
-            blueprint.to_sql(),
-            [
-                "CREATE TABLE [users] ("
-                "[profile_id] INT NOT NULL, "
-                "[big_profile_id] BIGINT NOT NULL, "
-                "[tiny_profile_id] TINYINT NOT NULL, "
-                "[small_profile_id] SMALLINT NOT NULL, "
-                "[medium_profile_id] MEDIUMINT NOT NULL)"
-            ],
-        )
+        query_sql = blueprint.to_sql()
+        expected_sql = [
+            "CREATE TABLE [users] ("
+            "[profile_id] INT NOT NULL, "
+            "[big_profile_id] BIGINT NOT NULL, "
+            "[tiny_profile_id] TINYINT NOT NULL, "
+            "[small_profile_id] SMALLINT NOT NULL, "
+            "[medium_profile_id] MEDIUMINT NOT NULL)"
+        ]
+        self.assertEqual(query_sql, expected_sql)
 
     def test_can_add_columns_with_foreign_key_constaint(self):
         with self.schema.create("users") as blueprint:
@@ -105,17 +102,16 @@ class TestMSSQLSchemaBuilder(unittest.TestCase):
             blueprint.foreign("profile_id").references("id").on("profiles")
 
         self.assertEqual(len(blueprint.table.added_columns), 3)
-        self.assertEqual(
-            blueprint.to_sql(),
-            [
-                "CREATE TABLE [users] "
-                "([name] VARCHAR(255) NOT NULL, "
-                "[age] INT NOT NULL, "
-                "[profile_id] INT NOT NULL, "
-                "CONSTRAINT users_name_unique UNIQUE (name), "
-                "CONSTRAINT users_profile_id_foreign FOREIGN KEY ([profile_id]) REFERENCES [profiles]([id]))"
-            ],
-        )
+        query_sql = blueprint.to_sql()
+        expected_sql = [
+            "CREATE TABLE [users] "
+            "([name] VARCHAR(255) NOT NULL, "
+            "[age] INT NOT NULL, "
+            "[profile_id] INT NOT NULL, "
+            "CONSTRAINT users_name_unique UNIQUE (name), "
+            "CONSTRAINT users_profile_id_foreign FOREIGN KEY ([profile_id]) REFERENCES [profiles]([id]))"
+        ]
+        self.assertEqual(query_sql, expected_sql)
 
     def test_can_add_columns_with_add_foreign_constaint(self):
         with self.schema.create("users") as blueprint:
@@ -125,17 +121,16 @@ class TestMSSQLSchemaBuilder(unittest.TestCase):
             blueprint.add_foreign("profile_id.id.profiles")
 
         self.assertEqual(len(blueprint.table.added_columns), 3)
-        self.assertEqual(
-            blueprint.to_sql(),
-            [
-                "CREATE TABLE [users] "
-                "([name] VARCHAR(255) NOT NULL, "
-                "[age] INT NOT NULL, "
-                "[profile_id] INT NOT NULL, "
-                "CONSTRAINT users_name_unique UNIQUE (name), "
-                "CONSTRAINT users_profile_id_foreign FOREIGN KEY ([profile_id]) REFERENCES [profiles]([id]))"
-            ],
-        )
+        query_sql = blueprint.to_sql()
+        expected_sql = [
+            "CREATE TABLE [users] "
+            "([name] VARCHAR(255) NOT NULL, "
+            "[age] INT NOT NULL, "
+            "[profile_id] INT NOT NULL, "
+            "CONSTRAINT users_name_unique UNIQUE (name), "
+            "CONSTRAINT users_profile_id_foreign FOREIGN KEY ([profile_id]) REFERENCES [profiles]([id]))"
+        ]
+        self.assertEqual(query_sql, expected_sql)
 
     def test_can_advanced_table_creation(self):
         with self.schema.create("users") as blueprint:
@@ -152,15 +147,14 @@ class TestMSSQLSchemaBuilder(unittest.TestCase):
             blueprint.timestamps()
 
         self.assertEqual(len(blueprint.table.added_columns), 10)
-        self.assertEqual(
-            blueprint.to_sql(),
-            [
-                "CREATE TABLE [users] ([id] INT IDENTITY NOT NULL PRIMARY KEY, [name] VARCHAR(255) NOT NULL, [email] VARCHAR(255) NOT NULL, "
-                "[password] VARCHAR(255) NOT NULL, [admin] INT NOT NULL DEFAULT 0, [remember_token] VARCHAR(255) NULL, "
-                "[verified_at] DATETIME NULL, [registered_at] DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, [created_at] DATETIME NULL DEFAULT CURRENT_TIMESTAMP, "
-                "[updated_at] DATETIME NULL DEFAULT CURRENT_TIMESTAMP, CONSTRAINT users_email_unique UNIQUE (email))"
-            ],
-        )
+        query_sql = blueprint.to_sql()
+        expected_sql = [
+            "CREATE TABLE [users] ([id] INT IDENTITY NOT NULL PRIMARY KEY, [name] VARCHAR(255) NOT NULL, [email] VARCHAR(255) NOT NULL, "
+            "[password] VARCHAR(255) NOT NULL, [admin] INT NOT NULL DEFAULT 0, [remember_token] VARCHAR(255) NULL, "
+            "[verified_at] DATETIME NULL, [registered_at] DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, [created_at] DATETIME NULL DEFAULT CURRENT_TIMESTAMP, "
+            "[updated_at] DATETIME NULL DEFAULT CURRENT_TIMESTAMP, CONSTRAINT users_email_unique UNIQUE (email))"
+        ]
+        self.assertEqual(query_sql, expected_sql)
 
     def test_can_advanced_table_creation2(self):
         with self.schema.create("users") as blueprint:
@@ -183,18 +177,15 @@ class TestMSSQLSchemaBuilder(unittest.TestCase):
             blueprint.timestamps()
 
         self.assertEqual(len(blueprint.table.added_columns), 15)
-        self.assertEqual(
-            blueprint.to_sql(),
-            (
-                [
-                    "CREATE TABLE [users] ([id] INT IDENTITY NOT NULL PRIMARY KEY, [gender] VARCHAR(255) NOT NULL CHECK([gender] IN ('male', 'female')), [name] VARCHAR(255) NOT NULL, [duration] VARCHAR(255) NOT NULL, "
-                    "[url] VARCHAR(255) NOT NULL, [last_address] VARCHAR(255) NULL, [route_origin] VARCHAR(255) NULL, [mac_address] VARCHAR(255) NULL, [published_at] DATETIME NOT NULL, [thumbnail] VARCHAR(255) NULL, [premium] INT NOT NULL, "
-                    "[author_id] INT NULL, [description] TEXT NOT NULL, [created_at] DATETIME NULL DEFAULT CURRENT_TIMESTAMP, "
-                    "[updated_at] DATETIME NULL DEFAULT CURRENT_TIMESTAMP, "
-                    "CONSTRAINT users_author_id_foreign FOREIGN KEY ([author_id]) REFERENCES [users]([id]) ON DELETE CASCADE)"
-                ]
-            ),
-        )
+        query_sql = blueprint.to_sql()
+        expected_sql = [
+            "CREATE TABLE [users] ([id] INT IDENTITY NOT NULL PRIMARY KEY, [gender] VARCHAR(255) NOT NULL CHECK([gender] IN ('male', 'female')), [name] VARCHAR(255) NOT NULL, [duration] VARCHAR(255) NOT NULL, "
+            "[url] VARCHAR(255) NOT NULL, [last_address] VARCHAR(255) NULL, [route_origin] VARCHAR(255) NULL, [mac_address] VARCHAR(255) NULL, [published_at] DATETIME NOT NULL, [thumbnail] VARCHAR(255) NULL, [premium] INT NOT NULL, "
+            "[author_id] INT NULL, [description] TEXT NOT NULL, [created_at] DATETIME NULL DEFAULT CURRENT_TIMESTAMP, "
+            "[updated_at] DATETIME NULL DEFAULT CURRENT_TIMESTAMP, "
+            "CONSTRAINT users_author_id_foreign FOREIGN KEY ([author_id]) REFERENCES [users]([id]) ON DELETE CASCADE)"
+        ]
+        self.assertEqual(query_sql, expected_sql)
 
     def test_can_add_columns_with_foreign_key_constraint_name(self):
         with self.schema.create("users") as blueprint:
@@ -204,14 +195,13 @@ class TestMSSQLSchemaBuilder(unittest.TestCase):
             ).on("profiles")
 
         self.assertEqual(len(blueprint.table.added_columns), 1)
-        self.assertEqual(
-            blueprint.to_sql(),
-            [
-                "CREATE TABLE [users] ("
-                "[profile_id] INT NOT NULL, "
-                "CONSTRAINT profile_foreign FOREIGN KEY ([profile_id]) REFERENCES [profiles]([id]))"
-            ],
-        )
+        query_sql = blueprint.to_sql()
+        expected_sql = [
+            "CREATE TABLE [users] ("
+            "[profile_id] INT NOT NULL, "
+            "CONSTRAINT profile_foreign FOREIGN KEY ([profile_id]) REFERENCES [profiles]([id]))"
+        ]
+        self.assertEqual(query_sql, expected_sql)
 
     def test_can_have_composite_keys(self):
         with self.schema.create("users") as blueprint:
@@ -221,17 +211,16 @@ class TestMSSQLSchemaBuilder(unittest.TestCase):
             blueprint.primary(["name", "age"])
 
         self.assertEqual(len(blueprint.table.added_columns), 3)
-        self.assertEqual(
-            blueprint.to_sql(),
-            [
-                "CREATE TABLE [users] "
-                "([name] VARCHAR(255) NOT NULL, "
-                "[age] INT NOT NULL, "
-                "[profile_id] INT NOT NULL, "
-                "CONSTRAINT users_name_unique UNIQUE (name), "
-                "CONSTRAINT users_name_age_primary PRIMARY KEY (name, age))"
-            ],
-        )
+        query_sql = blueprint.to_sql()
+        expected_sql = [
+            "CREATE TABLE [users] "
+            "([name] VARCHAR(255) NOT NULL, "
+            "[age] INT NOT NULL, "
+            "[profile_id] INT NOT NULL, "
+            "CONSTRAINT users_name_unique UNIQUE (name), "
+            "CONSTRAINT users_name_age_primary PRIMARY KEY (name, age))"
+        ]
+        self.assertEqual(query_sql, expected_sql)
 
     def test_can_have_column_primary_key(self):
         with self.schema.create("users") as blueprint:
@@ -240,67 +229,66 @@ class TestMSSQLSchemaBuilder(unittest.TestCase):
             blueprint.integer("profile_id")
 
         self.assertEqual(len(blueprint.table.added_columns), 3)
-        self.assertEqual(
-            blueprint.to_sql(),
-            [
-                "CREATE TABLE [users] "
-                "([name] VARCHAR(255) NOT NULL, "
-                "[age] INT NOT NULL, "
-                "[profile_id] INT NOT NULL, "
-                "CONSTRAINT users_name_primary PRIMARY KEY (name))"
-            ],
-        )
+        query_sql = blueprint.to_sql()
+        expected_sql = [
+            "CREATE TABLE [users] "
+            "([name] VARCHAR(255) NOT NULL, "
+            "[age] INT NOT NULL, "
+            "[profile_id] INT NOT NULL, "
+            "CONSTRAINT users_name_primary PRIMARY KEY (name))"
+        ]
+        self.assertEqual(query_sql, expected_sql)
 
     def test_has_table(self):
-        schema_sql = self.schema.has_table("users")
+        query_sql = self.schema.has_table("users")
 
-        sql = "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'users'"
+        expected_sql = "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'users'"
 
-        self.assertEqual(schema_sql, sql)
+        self.assertEqual(query_sql, expected_sql)
 
     def test_can_truncate(self):
-        sql = self.schema.truncate("users")
+        query_sql = self.schema.truncate("users")
 
-        self.assertEqual(sql, "TRUNCATE TABLE [users]")
+        self.assertEqual(query_sql, "TRUNCATE TABLE [users]")
 
     def test_can_rename_table(self):
-        sql = self.schema.rename("users", "clients")
+        query_sql = self.schema.rename("users", "clients")
 
-        self.assertEqual(sql, "EXEC sp_rename [users], [clients]")
+        self.assertEqual(query_sql, "EXEC sp_rename [users], [clients]")
 
     def test_can_drop_table_if_exists(self):
-        sql = self.schema.drop_table_if_exists("users", "clients")
+        query_sql = self.schema.drop_table_if_exists("users", "clients")
 
-        self.assertEqual(sql, "DROP TABLE IF EXISTS [users]")
+        self.assertEqual(query_sql, "DROP TABLE IF EXISTS [users]")
 
     def test_can_drop_table(self):
-        sql = self.schema.drop_table("users", "clients")
+        query_sql = self.schema.drop_table("users", "clients")
 
-        self.assertEqual(sql, "DROP TABLE [users]")
+        self.assertEqual(query_sql, "DROP TABLE [users]")
 
     def test_has_column(self):
-        sql = self.schema.has_column("users", "name")
+        query_sql = self.schema.has_column("users", "name")
 
         self.assertEqual(
-            sql,
+            query_sql,
             "SELECT 1 FROM sys.columns WHERE Name = N'name' AND Object_ID = Object_ID(N'users')",
         )
 
     def test_can_enable_foreign_keys(self):
-        sql = self.schema.enable_foreign_key_constraints()
+        query_sql = self.schema.enable_foreign_key_constraints()
 
-        self.assertEqual(sql, "")
+        self.assertEqual(query_sql, "")
 
     def test_can_disable_foreign_keys(self):
-        sql = self.schema.disable_foreign_key_constraints()
+        query_sql = self.schema.disable_foreign_key_constraints()
 
-        self.assertEqual(sql, "")
+        self.assertEqual(query_sql, "")
 
     def test_can_truncate_without_foreign_keys(self):
-        sql = self.schema.truncate("users", foreign_keys=True)
+        query_sql = self.schema.truncate("users", foreign_keys=True)
 
         self.assertEqual(
-            sql,
+            query_sql,
             [
                 "ALTER TABLE [users] NOCHECK CONSTRAINT ALL",
                 "TRUNCATE TABLE [users]",
@@ -313,12 +301,11 @@ class TestMSSQLSchemaBuilder(unittest.TestCase):
             blueprint.enum("status", ["active", "inactive"]).default("active")
 
         self.assertEqual(len(blueprint.table.added_columns), 1)
-        self.assertEqual(
-            blueprint.to_sql(),
-            [
-                "CREATE TABLE [users] ([status] VARCHAR(255) NOT NULL DEFAULT 'active' CHECK([status] IN ('active', 'inactive')))"
-            ],
-        )
+        query_sql = blueprint.to_sql()
+        expected_sql = [
+            "CREATE TABLE [users] ([status] VARCHAR(255) NOT NULL DEFAULT 'active' CHECK([status] IN ('active', 'inactive')))"
+        ]
+        self.assertEqual(query_sql, expected_sql)
 
     def test_can_change_column_enum(self):
         with self.schema.table("users") as blueprint:
@@ -327,9 +314,8 @@ class TestMSSQLSchemaBuilder(unittest.TestCase):
             ).change()
 
         self.assertEqual(len(blueprint.table.changed_columns), 1)
-        self.assertEqual(
-            blueprint.to_sql(),
-            [
-                "ALTER TABLE [users] ALTER COLUMN [status] VARCHAR(255) NOT NULL DEFAULT 'active' CHECK([status] IN ('active', 'inactive'))"
-            ],
-        )
+        query_sql = blueprint.to_sql()
+        expected_sql = [
+            "ALTER TABLE [users] ALTER COLUMN [status] VARCHAR(255) NOT NULL DEFAULT 'active' CHECK([status] IN ('active', 'inactive'))"
+        ]
+        self.assertEqual(query_sql, expected_sql)
