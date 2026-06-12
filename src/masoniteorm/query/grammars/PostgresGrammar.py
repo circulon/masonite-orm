@@ -91,6 +91,12 @@ class PostgresGrammar(BaseGrammar):
     def where_not_like_string(self):
         return "{keyword} {column} NOT ILIKE {value}"
 
+    def where_regexp_string(self):
+        return "{keyword} {column} ~ {value}"
+
+    def where_not_regexp_string(self):
+        return "{keyword} {column} !~ {value}"
+
     def subquery_alias_string(self):
         return "AS {alias}"
 
