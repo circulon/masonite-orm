@@ -276,16 +276,12 @@ class TestPostgresSelectGrammar(unittest.TestCase):
 
     def test_where_regexp(self):
         query_sql = self.builder.where("age", "regexp", "Joe").to_sql()
-        expected_sql = (
-            'SELECT * FROM "users" WHERE "users"."age" REGEXP \'Joe\''
-        )
+        expected_sql = 'SELECT * FROM "users" WHERE "users"."age" ~ \'Joe\''
         self.assertEqual(query_sql, expected_sql)
 
     def test_where_not_regexp(self):
         query_sql = self.builder.where("age", "not regexp", "Joe").to_sql()
-        expected_sql = (
-            'SELECT * FROM "users" WHERE "users"."age" NOT REGEXP \'Joe\''
-        )
+        expected_sql = 'SELECT * FROM "users" WHERE "users"."age" !~ \'Joe\''
         self.assertEqual(query_sql, expected_sql)
 
     def test_where_date(self):
