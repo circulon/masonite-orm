@@ -629,7 +629,7 @@ class TestMSSQLSelectGrammar(unittest.TestCase):
             model=Model(),
             dry=True,
         )
-        self.assertEqual(builder.to_sql(), "SELECT * FROM [users] AS u")
+        self.assertEqual(builder.to_sql(), "SELECT u.* FROM [users] AS u")
 
     def test_table_with_uppercase_as_alias(self):
         """table('x AS alias') — uppercase AS — should work identically."""
@@ -640,7 +640,7 @@ class TestMSSQLSelectGrammar(unittest.TestCase):
             model=Model(),
             dry=True,
         )
-        self.assertEqual(builder.to_sql(), "SELECT * FROM [users] AS u")
+        self.assertEqual(builder.to_sql(), "SELECT u.* FROM [users] AS u")
 
     def test_table_with_mixed_case_as_alias(self):
         """table('x As alias') — mixed-case AS — should work identically."""
@@ -651,7 +651,7 @@ class TestMSSQLSelectGrammar(unittest.TestCase):
             model=Model(),
             dry=True,
         )
-        self.assertEqual(builder.to_sql(), "SELECT * FROM [users] AS u")
+        self.assertEqual(builder.to_sql(), "SELECT u.* FROM [users] AS u")
 
     def test_from_raw_passes_through_unquoted(self):
         """from_raw() must emit the string exactly as given, without quoting."""

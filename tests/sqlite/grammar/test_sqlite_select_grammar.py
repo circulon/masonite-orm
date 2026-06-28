@@ -619,7 +619,7 @@ class TestSQLiteSelectGrammar(unittest.TestCase):
             model=Model(),
             dry=True,
         )
-        self.assertEqual(builder.to_sql(), 'SELECT * FROM "users" AS u')
+        self.assertEqual(builder.to_sql(), 'SELECT u.* FROM "users" AS u')
 
     def test_table_with_uppercase_as_alias(self):
         """table('x AS alias') — uppercase AS — should work identically."""
@@ -630,7 +630,7 @@ class TestSQLiteSelectGrammar(unittest.TestCase):
             model=Model(),
             dry=True,
         )
-        self.assertEqual(builder.to_sql(), 'SELECT * FROM "users" AS u')
+        self.assertEqual(builder.to_sql(), 'SELECT u.* FROM "users" AS u')
 
     def test_table_with_mixed_case_as_alias(self):
         """table('x As alias') — mixed-case AS — should work identically."""
@@ -641,7 +641,7 @@ class TestSQLiteSelectGrammar(unittest.TestCase):
             model=Model(),
             dry=True,
         )
-        self.assertEqual(builder.to_sql(), 'SELECT * FROM "users" AS u')
+        self.assertEqual(builder.to_sql(), 'SELECT u.* FROM "users" AS u')
 
     def test_table_raw_preserves_full_string(self):
         """table('x AS alias', raw=True) must not strip the alias."""
@@ -719,3 +719,121 @@ class TestSQLiteSelectGrammar(unittest.TestCase):
             "report_groups As rg", "report_groups.id", "=", "users.id"
         ).to_sql()
         self.assertIn('"report_groups" AS rg', query_sql)
+
+    # ------------------------------------------------------------------
+    # Table alias used as column prefix in SELECT and WHERE
+    # ------------------------------------------------------------------
+
+    def test_table_alias_used_as_column_prefix_on_select_all(self):
+        """SELECT * with a table alias should prefix columns with the alias."""
+        builder = QueryBuilder(
+            SQLiteGrammar,
+            table="auth_user AS au",
+            connection_class=MockConnection,
+            model=Model(),
+            dry=True,
+        )
+        self.assertEqual(
+            builder.to_sql(), 'SELECT au.* FROM "auth_user" AS au'
+        )
+
+    def test_table_alias_used_as_column_prefix_on_named_select(self):
+        """SELECT col with a table alias should prefix the column with the alias."""
+        builder = QueryBuilder(
+            SQLiteGrammar,
+            table="auth_user AS au",
+            connection_class=MockConnection,
+            model=Model(),
+            dry=True,
+        )
+        self.assertEqual(
+            builder.select("email").to_sql(),
+            'SELECT au."email" FROM "auth_user" AS au',
+        )
+
+    def test_table_alias_used_as_column_prefix_in_where(self):
+        """WHERE clause with a table alias should prefix the column with the alias."""
+        builder = QueryBuilder(
+            SQLiteGrammar,
+            table="auth_user AS au",
+            connection_class=MockConnection,
+            model=Model(),
+            dry=True,
+        )
+        self.assertEqual(
+            builder.where("email", "test@example.com").to_sql(),
+            'SELECT au.* FROM "auth_user" AS au WHERE au."email" = \'test@example.com\'',
+        )
+
+    # ------------------------------------------------------------------
+    # raw=True table — column refs must not be prefixed
+    # ------------------------------------------------------------------
+
+    def test_raw_table_select_all_has_no_column_prefix(self):
+        """from_raw() with SELECT * should produce bare * with no table prefix."""
+        query_sql = self.builder.from_raw("orders, customers").to_sql()
+        self.assertEqual(query_sql, "SELECT * FROM orders, customers")
+
+    def test_raw_table_named_select_has_no_column_prefix(self):
+        """from_raw() with a named column should not prefix the column."""
+        query_sql = (
+            self.builder.from_raw("orders, customers").select("id").to_sql()
+        )
+        self.assertEqual(query_sql, 'SELECT "id" FROM orders, customers')
+
+    def test_raw_table_with_inline_alias_has_no_column_prefix(self):
+        """table('auth_user AS au', raw=True) should pass string through intact
+        and not attempt to use AS au as a column prefix."""
+        builder = QueryBuilder(
+            SQLiteGrammar,
+            table="auth_user AS au",
+            connection_class=MockConnection,
+            model=Model(),
+            dry=True,
+        )
+        builder._table.raw = True
+        builder._table.name = "auth_user AS au"
+        builder._table.alias = None
+        query_sql = builder.to_sql()
+        self.assertEqual(query_sql, "SELECT * FROM auth_user AS au")
+
+    # ------------------------------------------------------------------
+    # Model.__selects__ with table alias
+    # ------------------------------------------------------------------
+
+    def test_model_selects_with_table_alias(self):
+        """Model __selects__ columns should be prefixed with the table alias."""
+
+        class AliasedModel(Model):
+            __selects__ = ("username", "remember_token as token")
+
+        builder = QueryBuilder(
+            SQLiteGrammar,
+            table="auth_user AS au",
+            connection_class=MockConnection,
+            model=AliasedModel(),
+            dry=True,
+        )
+        self.assertEqual(
+            builder.to_sql(),
+            'SELECT au."username", au."remember_token" AS token FROM "auth_user" AS au',
+        )
+
+    def test_model_selects_with_raw_table(self):
+        """Model __selects__ with a raw table should not prefix columns."""
+
+        class SelectModel(Model):
+            __selects__ = ("username", "remember_token as token")
+
+        builder = QueryBuilder(
+            SQLiteGrammar,
+            table="users",
+            connection_class=MockConnection,
+            model=SelectModel(),
+            dry=True,
+        )
+        builder.from_raw("users")
+        self.assertEqual(
+            builder.to_sql(),
+            'SELECT "username", "remember_token" AS token FROM users',
+        )
