@@ -518,7 +518,7 @@ class TestPostgresSelectGrammar(unittest.TestCase):
         )
         query_sql = self.builder.join(clause).to_sql()
         expected_sql = (
-            'SELECT * FROM "users" INNER JOIN "report_groups" AS "rg"'
+            'SELECT * FROM "users" INNER JOIN "report_groups" AS rg'
             ' ON "bgt"."fund" = "rg"."fund" AND "bgt"."dept" = "rg"."dept"'
             ' AND "bgt"."acct" = "rg"."acct" AND "bgt"."sub" = "rg"."sub"'
         )
@@ -532,7 +532,7 @@ class TestPostgresSelectGrammar(unittest.TestCase):
         )
         query_sql = self.builder.join(clause).to_sql()
         expected_sql = (
-            'SELECT * FROM "users" INNER JOIN "report_groups" AS "rg"'
+            'SELECT * FROM "users" INNER JOIN "report_groups" AS rg'
             ' ON "bgt"."active" = \'1\' OR "bgt"."acct" = \'1234\''
         )
         self.assertEqual(query_sql, expected_sql)
@@ -546,7 +546,7 @@ class TestPostgresSelectGrammar(unittest.TestCase):
         )
         query_sql = self.builder.join(clause).to_sql()
         expected_sql = (
-            'SELECT * FROM "users" INNER JOIN "report_groups" AS "rg"'
+            'SELECT * FROM "users" INNER JOIN "report_groups" AS rg'
             ' ON "acct" IS NULL OR "dept" IS NULL AND "rg"."abc" = \'10\''
         )
         self.assertEqual(query_sql, expected_sql)
@@ -560,7 +560,7 @@ class TestPostgresSelectGrammar(unittest.TestCase):
         )
         query_sql = self.builder.join(clause).to_sql()
         expected_sql = (
-            'SELECT * FROM "users" INNER JOIN "report_groups" AS "rg"'
+            'SELECT * FROM "users" INNER JOIN "report_groups" AS rg'
             ' ON "acct" IS NOT NULL OR "dept" IS NOT NULL AND "rg"."abc" = \'10\''
         )
         self.assertEqual(query_sql, expected_sql)
@@ -573,7 +573,7 @@ class TestPostgresSelectGrammar(unittest.TestCase):
             ),
         ).to_sql()
         expected_sql = (
-            'SELECT * FROM "users" INNER JOIN "report_groups" AS "rg"'
+            'SELECT * FROM "users" INNER JOIN "report_groups" AS rg'
             ' ON "bgt"."fund" = "rg"."fund" AND "bgt" IS NULL'
         )
         self.assertEqual(query_sql, expected_sql)
@@ -586,7 +586,7 @@ class TestPostgresSelectGrammar(unittest.TestCase):
             ),
         ).to_sql()
         expected_sql = (
-            'SELECT * FROM "users" LEFT JOIN "report_groups" AS "rg"'
+            'SELECT * FROM "users" LEFT JOIN "report_groups" AS rg'
             ' ON "bgt"."fund" = "rg"."fund" OR "bgt" IS NULL'
         )
         self.assertEqual(query_sql, expected_sql)
@@ -599,7 +599,106 @@ class TestPostgresSelectGrammar(unittest.TestCase):
             ),
         ).to_sql()
         expected_sql = (
-            'SELECT * FROM "users" RIGHT JOIN "report_groups" AS "rg"'
+            'SELECT * FROM "users" RIGHT JOIN "report_groups" AS rg'
             ' ON "bgt"."fund" = "rg"."fund" OR "bgt" IS NULL'
         )
         self.assertEqual(query_sql, expected_sql)
+
+    # ------------------------------------------------------------------
+    # FROM table alias (covers FromTable alias parsing + BaseGrammar render)
+    # ------------------------------------------------------------------
+
+    def test_table_with_lowercase_as_alias(self):
+        """table('x as alias') should quote table and render alias."""
+        builder = QueryBuilder(
+            PostgresGrammar,
+            table="users as u",
+            connection_class=MockConnection,
+            model=Model(),
+            dry=True,
+        )
+        self.assertEqual(builder.to_sql(), 'SELECT * FROM "users" AS u')
+
+    def test_table_with_uppercase_as_alias(self):
+        """table('x AS alias') — uppercase AS — should work identically."""
+        builder = QueryBuilder(
+            PostgresGrammar,
+            table="users AS u",
+            connection_class=MockConnection,
+            model=Model(),
+            dry=True,
+        )
+        self.assertEqual(builder.to_sql(), 'SELECT * FROM "users" AS u')
+
+    def test_table_with_mixed_case_as_alias(self):
+        """table('x As alias') — mixed-case AS — should work identically."""
+        builder = QueryBuilder(
+            PostgresGrammar,
+            table="users As u",
+            connection_class=MockConnection,
+            model=Model(),
+            dry=True,
+        )
+        self.assertEqual(builder.to_sql(), 'SELECT * FROM "users" AS u')
+
+    def test_from_raw_passes_through_unquoted(self):
+        """from_raw() must emit the string exactly as given, without quoting."""
+        query_sql = self.builder.from_raw("orders, customers").to_sql()
+        self.assertIn("orders, customers", query_sql)
+        self.assertNotIn('"orders, customers"', query_sql)
+
+    # ------------------------------------------------------------------
+    # SELECT column alias — case-insensitive AS
+    # ------------------------------------------------------------------
+
+    def test_select_column_with_uppercase_as_alias(self):
+        """select('col AS alias') should render as col AS alias."""
+        query_sql = self.builder.select("name AS n").to_sql()
+        self.assertEqual(query_sql, 'SELECT "users"."name" AS n FROM "users"')
+
+    def test_select_column_with_lowercase_as_alias(self):
+        """select('col as alias') — lowercase as — should work identically."""
+        query_sql = self.builder.select("name as n").to_sql()
+        self.assertEqual(query_sql, 'SELECT "users"."name" AS n FROM "users"')
+
+    # ------------------------------------------------------------------
+    # ORDER BY — case-insensitive inline direction
+    # ------------------------------------------------------------------
+
+    def test_order_by_inline_uppercase_desc(self):
+        """order_by('col DESC') should compile with DESC direction."""
+        query_sql = self.builder.order_by("name DESC").to_sql()
+        self.assertIn("ORDER BY", query_sql)
+        self.assertIn("DESC", query_sql)
+        self.assertNotIn("name DESC", query_sql)
+
+    def test_order_by_inline_uppercase_asc(self):
+        """order_by('col ASC') should compile with ASC direction."""
+        query_sql = self.builder.order_by("name ASC").to_sql()
+        self.assertIn("ORDER BY", query_sql)
+        self.assertIn("ASC", query_sql)
+        self.assertNotIn("name ASC", query_sql)
+
+    def test_order_by_inline_mixed_case_desc(self):
+        """order_by('col Desc') — mixed case — should compile correctly."""
+        query_sql = self.builder.order_by("name Desc").to_sql()
+        self.assertIn("DESC", query_sql)
+        self.assertNotIn("name Desc", query_sql)
+
+    # ------------------------------------------------------------------
+    # JOIN alias — case-insensitive AS
+    # ------------------------------------------------------------------
+
+    def test_join_with_uppercase_as_alias(self):
+        """JoinClause('table AS alias') — uppercase AS — should render alias."""
+        query_sql = self.builder.join(
+            "report_groups AS rg", "report_groups.id", "=", "users.id"
+        ).to_sql()
+        self.assertIn('"report_groups" AS rg', query_sql)
+
+    def test_join_with_mixed_case_as_alias(self):
+        """JoinClause('table As alias') — mixed case — should render alias."""
+        query_sql = self.builder.join(
+            "report_groups As rg", "report_groups.id", "=", "users.id"
+        ).to_sql()
+        self.assertIn('"report_groups" AS rg', query_sql)
