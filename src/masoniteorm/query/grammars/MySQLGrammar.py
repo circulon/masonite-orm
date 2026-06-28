@@ -108,27 +108,6 @@ class MySQLGrammar(BaseGrammar):
     def get_false_column_string(self):
         return "{keyword} {column} = '0'"
 
-    def process_table(self, table):
-        """Compiles a given table name.
-
-        Arguments:
-            table {string} -- The table name to compile.
-
-        Returns:
-            self
-        """
-        if not table:
-            return ""
-        if isinstance(table, str):
-            return ".".join(
-                self.table_string().format(table=t) for t in table.split(".")
-            )
-        if table.raw:
-            return table.name
-        return ".".join(
-            self.table_string().format(table=t) for t in table.name.split(".")
-        )
-
     def subquery_alias_string(self):
         return "AS {alias}"
 

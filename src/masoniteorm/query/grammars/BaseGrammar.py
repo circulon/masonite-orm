@@ -279,7 +279,7 @@ class BaseGrammar:
                 sql += self.join_string().format(
                     foreign_table=self.process_table(join.table),
                     alias=(
-                        f" AS {self.process_table(join.alias)}"
+                        f" AS {self.process_alias(join.alias)}"
                         if join.alias
                         else ""
                     ),
@@ -480,7 +480,7 @@ class BaseGrammar:
         if table.raw:
             return table.name
 
-        return ".".join(
+        compiled = ".".join(
             self.table_string().format(
                 table=t,
                 database=self._connection_details.get("database", ""),
@@ -488,6 +488,11 @@ class BaseGrammar:
             )
             for t in table.name.split(".")
         )
+
+        if table.alias:
+            compiled += f" AS {self.process_alias(table.alias)}"
+
+        return compiled
 
     def process_limit(self):
         """Compiles the limit expression.
