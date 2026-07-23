@@ -1,4 +1,20 @@
+import re
+
 from ..helpers.misc import deprecated
+
+
+def _split_alias(value):
+    """Split a string on ' AS ' (case-insensitive) and return (name, alias).
+
+    Returns (value, None) when no alias is present or value is None.
+    """
+    if value is None:
+        return None, None
+    value = value.strip()
+    parts = re.split(r"\s+[Aa][Ss]\s+", value, maxsplit=1)
+    if len(parts) == 2:
+        return parts[0].strip(), parts[1].strip()
+    return value, None
 
 
 class QueryExpression:
@@ -40,11 +56,15 @@ class HavingExpression:
 
 
 class FromTable:
-    """A helper class to manage having expressions."""
+    """A helper class to manage from-table expressions."""
 
     def __init__(self, name, raw=False):
-        self.name = name
         self.raw = raw
+        if raw:
+            self.name = name.strip()
+            self.alias = None
+        else:
+            self.name, self.alias = _split_alias(name)
 
 
 class UpdateQueryExpression:
@@ -88,13 +108,12 @@ class SelectExpression:
     """A helper class to manage select expressions."""
 
     def __init__(self, column, raw=False):
-        self.column = column.strip()
-        self.alias = None
         self.raw = raw
-        if raw is False and " as " in self.column:
-            self.column, self.alias = self.column.split(" as ")
-            self.column = self.column.strip()
-            self.alias = self.alias.strip()
+        if raw:
+            self.column = column.strip()
+            self.alias = None
+        else:
+            self.column, self.alias = _split_alias(column)
 
 
 class OrderByExpression:
@@ -108,13 +127,13 @@ class OrderByExpression:
         self.direction = direction
         self.bindings = bindings
 
-        if raw is False:
-            if self.column.endswith(" desc"):
-                self.column = self.column.split(" desc")[0].strip()
+        if not raw:
+            col_lower = self.column.lower()
+            if col_lower.endswith(" desc"):
+                self.column = self.column[:-5].strip()
                 self.direction = "DESC"
-
-            if self.column.endswith(" asc"):
-                self.column = self.column.split(" asc")[0].strip()
+            elif col_lower.endswith(" asc"):
+                self.column = self.column[:-4].strip()
                 self.direction = "ASC"
 
 
@@ -129,12 +148,9 @@ class GroupByExpression:
 
 
 class AggregateExpression:
-    def __init__(self, aggregate=None, column=None, alias=False):
+    def __init__(self, aggregate=None, column=None):
         self.aggregate = aggregate
-        self.column = column.strip()
-        self.alias = alias
-        if " as " in self.column:
-            self.column, self.alias = self.column.split(" as ")
+        self.column, self.alias = _split_alias(column)
 
 
 class Raw:
@@ -144,14 +160,9 @@ class Raw:
 
 class JoinClause:
     def __init__(self, table, clause="join"):
-        self.table = table
-        self.alias = None
         self.clause = clause
         self.on_clauses = []
-
-        if " as " in self.table:
-            self.table = table.split(" as ")[0]
-            self.alias = table.split(" as ")[1]
+        self.table, self.alias = _split_alias(table)
 
     def on(self, column1, equality, column2):
         self.on_clauses.append(OnClause(column1, equality, column2))

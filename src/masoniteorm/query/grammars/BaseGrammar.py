@@ -279,7 +279,7 @@ class BaseGrammar:
                 sql += self.join_string().format(
                     foreign_table=self.process_table(join.table),
                     alias=(
-                        f" AS {self.process_table(join.alias)}"
+                        f" AS {self.process_alias(join.alias)}"
                         if join.alias
                         else ""
                     ),
@@ -480,7 +480,7 @@ class BaseGrammar:
         if table.raw:
             return table.name
 
-        return ".".join(
+        compiled = ".".join(
             self.table_string().format(
                 table=t,
                 database=self._connection_details.get("database", ""),
@@ -488,6 +488,33 @@ class BaseGrammar:
             )
             for t in table.name.split(".")
         )
+
+        if table.alias:
+            compiled += f" AS {self.process_alias(table.alias)}"
+
+        return compiled
+
+    def process_table_ref(self, table):
+        """Returns the reference to use when prefixing column names.
+
+        When the table has an alias, use the quoted alias; otherwise fall back
+        to the full process_table() output (quoted table name).
+
+        Arguments:
+            table -- A FromTable instance, a plain string, or None.
+
+        Returns:
+            str
+        """
+        if not table:
+            return ""
+        if isinstance(table, str):
+            return self.process_table(table)
+        if table.raw:
+            return ""
+        if table.alias:
+            return self.process_alias(table.alias)
+        return self.process_table(table)
 
     def process_limit(self):
         """Compiles the limit expression.
@@ -860,6 +887,12 @@ class BaseGrammar:
             sql += self.process_aggregates()
 
         if sql == "":
+            if (
+                self.table
+                and not isinstance(self.table, str)
+                and self.table.alias
+            ):
+                return f"{self.process_alias(self.table.alias)}.*"
             return "*"
 
         return sql.rstrip(",").rstrip(", ")
@@ -914,7 +947,9 @@ class BaseGrammar:
         if column and "." in column:
             table, column = column.split(".")
         return self.column_string().format(
-            column=column, separator=separator, table=table or self.table
+            column=column,
+            separator=separator,
+            table=self.process_table_ref(table or self.table),
         )
 
     def _table_column_string(self, column, alias=None, separator=""):
@@ -933,21 +968,35 @@ class BaseGrammar:
         if column and "." in column:
             table, column = column.split(".")
 
+        table_ref = self.process_table_ref(table or self.table)
+
         if column == "*":
-            return self.column_strings.get("select_all").format(
-                column=column,
-                separator=separator,
-                table=self.process_table(table or self.table),
-            )
+            if table_ref:
+                return self.column_strings.get("select_all").format(
+                    column=column,
+                    separator=separator,
+                    table=table_ref,
+                )
+            return f"*{separator}"
 
         if alias:
             alias_string = self.subquery_alias_string().format(alias=alias)
-        return self.column_strings.get(self._action).format(
+
+        if table_ref:
+            return self.column_strings.get(self._action).format(
+                column=column,
+                separator=separator,
+                alias=" " + alias_string if alias else "",
+                table=table_ref,
+            )
+        # No table ref (e.g. raw table) — use the no-table insert format
+        col = self.column_strings.get("insert").format(
             column=column,
-            separator=separator,
-            alias=" " + alias_string if alias else "",
-            table=self.process_table(table or self.table),
+            separator="",
         )
+        if alias:
+            col += f" {self.subquery_alias_string().format(alias=alias)}"
+        return col + separator
 
     def _compile_value(self, value, separator=""):
         """Compiles a value using the value syntax.

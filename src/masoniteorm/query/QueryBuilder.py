@@ -183,26 +183,28 @@ class QueryBuilder(ObservesEvents):
 
         Arguments:
             table {string} -- The name of the table
-
+            raw {bool} -- If the table ref should be inserted as a raw identifier
         Returns:
             self
         """
-        if table:
-            self._table = FromTable(table, raw=raw)
-        else:
+        if not table:
             self._table = table
+        else:
+            self._table = FromTable(table, raw=raw)
+
         return self
 
-    def from_(self, table):
+    def from_(self, table, raw=False):
         """Alias for the table method
 
         Arguments:
             table {string} -- The name of the table
+            raw {bool} -- If the table ref should be inserted as a raw identifier
 
         Returns:
             self
         """
-        return self.table(table)
+        return self.table(table, raw=raw)
 
     def from_raw(self, table):
         """Alias for the table method
@@ -1800,12 +1802,22 @@ class QueryBuilder(ObservesEvents):
 
         Arguments:
             aggregate {string} -- The name of the aggregation.
-            column {string} -- The name of the column to aggregate.
+            column {string} -- The name of the column to aggregate. May include
+                an AS alias (e.g. "price as total").
+            alias {string} -- Deprecated. Embed the alias directly in the column
+                string instead: aggregate("SUM", "age as number").
         """
+        if alias is not None:
+            from ..helpers.misc import deprecated
+
+            deprecated(
+                "Passing alias= to aggregate() is deprecated. "
+                "Use the column string instead: "
+                f'aggregate("{aggregate}", "{column} as {alias}").'
+            )
+            column = f"{column} as {alias}"
         self._aggregates += (
-            AggregateExpression(
-                aggregate=aggregate, column=column, alias=alias
-            ),
+            AggregateExpression(aggregate=aggregate, column=column),
         )
 
     def first(self, fields=None, query=False):

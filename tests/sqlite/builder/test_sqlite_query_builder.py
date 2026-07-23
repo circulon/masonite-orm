@@ -87,7 +87,7 @@ class SQLiteQueryBuilderTest(unittest.TestCase):
 
     def test_sum_aggregate_with_alias(self):
         builder = self.get_builder()
-        builder.aggregate("SUM", "age", alias="number")
+        builder.aggregate("SUM", "age as number")
         query_sql = builder.to_sql()
         expected_sql = 'SELECT SUM("users"."age") AS number FROM "users"'
         self.assertEqual(query_sql, expected_sql)
