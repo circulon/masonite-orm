@@ -16,14 +16,25 @@ class SoftDeletesMixin:
 
     if TYPE_CHECKING:
 
-        @staticmethod
-        def with_trashed() -> QueryBuilder: ...
-        @staticmethod
-        def only_trashed() -> QueryBuilder: ...
-        @staticmethod
-        def force_delete() -> QueryBuilder: ...
-        @staticmethod
-        def restore() -> QueryBuilder: ...
+        @classmethod
+        def with_trashed(cls) -> QueryBuilder:
+            """Include records flagged as deleted"""
+            ...
+
+        @classmethod
+        def only_trashed(cls) -> QueryBuilder:
+            """Filter for records marked as deleted"""
+            ...
+
+        @classmethod
+        def force_delete(cls) -> QueryBuilder:
+            """Remove the record from the table"""
+            ...
+
+        @classmethod
+        def restore(cls) -> QueryBuilder:
+            """Mark the record as not deleted"""
+            ...
 
     def get_deleted_at_column(self):
         return self.__deleted_at__
